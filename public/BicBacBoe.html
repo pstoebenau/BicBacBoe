@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width">
+    <title>¯\_(ツ)_/¯</title>
+    <link rel="stylesheet" href="./css/style.css">
+  </head>
+  <body>
+    <header id="menuBar">
+      <div id="background"></div>
+      <div class="container">
+        <div id="branding">
+          <img src="./img/button.png">
+          <h1><span class="highlight">Website</span></h1>
+        </div>
+        <nav>
+          <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="about.html">About</a></li>
+            <li><a href="lab.html">Lab</a></li>
+            <li><a href="canvas.html">Canvas</a></li>
+            <li class="current"><a href="BicBacBoe.html">BicBacBoe</a></li>
+          </ul>
+        </nav>
+      </div>
+    </header>
+
+    <div id="BicBacBoe">
+      <canvas></canvas>
+    </div>
+      <div class="sideBar">
+        <h3 id="clientID">Client ID: null</h3>
+        <h3>Pick an opponent ID</h3>
+        <input type="number" min="0" max="99999" id="opponentID">
+        <h3>BicBacBoe Dimensions</h3>
+        <input type="range" min="0" max="4" value="0" id="dimensionRange">
+        <h3>Zoom</h3>
+        <input type="range" min="10" max="100" value="1" id="zoomRange">
+        <button type="button" name="Fullscreen" onclick="goFullscreen" id = "fullScrnBttn">Fullscreen</button>
+      </div>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
+    <script src="./js/client.js"></script>
+    <script src="./js/BicBacBoe/board.js"></script>
+    <script src="./js/BicBacBoe/BicBacBoe.js"></script>
+    <script type="text/javascript">
+      var BicBacBoe = document.getElementById("BicBacBoe");
+      var fullscrnBttn = document.getElementById("fullScrnBttn")
+
+      fullScrnBttn.addEventListener('click', function(){
+        if(canvas.webkitRequestFullscreen){
+          canvas.webkitRequestFullscreen();
+        }else if (canvas.mozRequestFullscreen) {
+          canvas.mozRequestFullscreen();
+        }else if (canvas.msRequestFullscreen) {
+          canvas.msRequestFullscreen();
+        }
+      });
+    </script>
+  </body>
+</html>
