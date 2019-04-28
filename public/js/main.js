@@ -1,11 +1,11 @@
-document.getElementById('SSNForm').addEventListener('submit', saveSSN);
+document.getElementById('Form').addEventListener('submit', saveNum);
 
-function saveSSN(e){
+function saveNum(e){
 
-  var ssn = document.getElementById('ssn').value;
+  var num = document.getElementById('num').value;
 
-  if(!isNaN(ssn) && ssn.length === 9)
-    localStorage.setItem('SSN', ssn);
+  if(!isNaN(num) && num.length === 9)
+    localStorage.setItem('Num', num);
   else{
     alert('Entry must be a number and 9 numbers longs');
   }

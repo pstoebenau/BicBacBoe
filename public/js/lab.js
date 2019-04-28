@@ -59,13 +59,6 @@ function calculate(){
     }
   }
 
-  if(answer.textContent === "69"){
-    alert("Haha! Ur mum Gai! Lol!");
-  }
-  else if(answer.textContent === "420"){
-    alert();
-  }
-
   if(answer.textContent.indexOf(".") !== -1)
     answer.textContent = answer.textContent.substring(0, answer.textContent.indexOf(".")+6);
 
