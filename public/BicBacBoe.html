@@ -34,7 +34,7 @@
         <h3>Pick an opponent ID</h3>
         <input type="number" min="0" max="99999" id="opponentID">
         <h3>BicBacBoe Dimensions</h3>
-        <input type="range" min="0" max="4" value="0" id="dimensionRange">
+        <input type="range" min="1" max="5" value="1" id="dimensionRange">
         <h3>Zoom</h3>
         <input type="range" min="10" max="100" value="1" id="zoomRange">
         <button type="button" name="Fullscreen" onclick="goFullscreen" id = "fullScrnBttn">Fullscreen</button>
@@ -43,6 +43,7 @@
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <script src="./js/client.js"></script>
+    <script src="./js/canvasSetup.js"></script>
     <script src="./js/BicBacBoe/board.js"></script>
     <script src="./js/BicBacBoe/BicBacBoe.js"></script>
     <script type="text/javascript">
