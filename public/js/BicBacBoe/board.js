@@ -13,14 +13,29 @@ function position(x, y)
     return new position(this.x - pos.x, this.y - pos.y);
   }
 
+  this.equals = (pos) =>
+  {
+    return this.x == pos.x && this.y == pos.y;
+  }
+
   this.copy = () =>
   {
     return new position(this.x, this.y);
   }
 
-  this.isInside = (p1, p2) =>
+  this.isInsideBox = (center, size) =>
   {
-    return (this.x >= p1.x && this.x <= p2.x && this.y >= p1.y && this.y <= p2.y);
+    let radius = new position(size/2, size/2);
+    let topLeftCorner = center.subtract(radius);
+    let botRightCorner = center.add(radius);
+
+    if(this.x < topLeftCorner.x || this.y < topLeftCorner.y)
+      return false;
+
+    if(this.x > botRightCorner.x || this.y > botRightCorner.y)
+      return false;
+
+    return true;
   }
 }
 
@@ -39,6 +54,7 @@ function ticTacToeBoard(x, y, size, dimen)
     this.grids = new grid(this.position.x, this.position.y, this.size);
     this.turn = 0;
     this.createGrids(this.grids, this.dimensions-1);
+    this.makeAllSelectable();
   }
 
   this.changeDim = (dimensions) =>
@@ -62,6 +78,70 @@ function ticTacToeBoard(x, y, size, dimen)
     this.grids.move(this.grids, posChange);
   }
 
+  this.createMove = (pos) =>
+  {
+    let grid;
+    let trail = [];
+
+    grid = this.grids.getGrid(this.grids, pos, this.turn);
+
+    if(!grid || !grid.selectable || grid.closed)
+      return;
+
+    trail.push(grid.getBox(pos));
+    grid.fillBox(trail[0].row, trail[0].col, this.turn);
+    this.resetSelectable();
+
+    this.checkAllWin(grid, trail);
+    grid = this.getNextGrid(grid, trail, 0);
+    grid.selectable = true;
+
+    if(grid.closed)
+      this.makeAllSelectable();
+
+    // Toggle turn on(0) and off(1)
+    this.turn = (this.turn+1)%2;
+  }
+
+  this.checkAllWin = (grid, trail) =>
+  {
+    let index;
+
+    if(grid.parent == null)
+    {
+      if(grid.checkWin(this.turn))
+      {
+        grid.close();
+        alert("Player " + (this.turn+1) + " has won!");
+      }
+      return;
+    }
+
+    if(!grid.checkWin(this.turn))
+      return;
+
+    grid.close();
+    index = grid.getIndexRelParent();
+    grid.parent.fillBox(index.row, index.col, this.turn);
+    trail.push(index);
+
+    this.checkAllWin(grid.parent, trail);
+  }
+
+  this.getNextGrid = (grid, trail, i) =>
+  {
+    if(grid.parent == null)
+      return grid;
+
+    if(trail[i+1])
+    {
+      grid = this.getNextGrid(grid.parent, trail, i+1);
+      return grid.children[trail[i].row][trail[i].col];
+    }
+
+    return grid.parent.children[trail[i].row][trail[i].col];
+  }
+
   this.createGrids = (grid, dimension) =>
   {
     if(dimension == 0)
@@ -79,20 +159,12 @@ function ticTacToeBoard(x, y, size, dimen)
 
   this.makeAllSelectable = () =>
   {
-    this.makeAllSelectableHelper(this.grids);
+    this.grids.makeAllSelectable(this.grids);
   }
 
-  this.makeAllSelectableHelper = (grid) =>
+  this.resetSelectable = () =>
   {
-    if(grid.children == null)
-    {
-      grid.selectable = true;
-      return;
-    }
-
-    for (var i = 0; i < 3; i++)
-      for (var j = 0; j < 3; j++)
-        this.makeAllSelectableHelper(grid.children[i][j]);
+    this.grids.resetSelectable(this.grids);
   }
 
   this.draw = (grid, dimension) =>
@@ -126,6 +198,7 @@ function grid(x, y, _size)
   this.size = _size;
   this.gridPoints = [[],[],[]];
   this.moves = [[],[],[]];
+  this.parent = null;
   this.children = null;
 
   this.resize = (grid, size, pos) =>
@@ -155,6 +228,142 @@ function grid(x, y, _size)
         grid.children[i][j].move(grid.children[i][j], posChange);
   }
 
+  // Writes the players move to grid
+  this.getGrid = (grid, pos, player) =>
+  {
+    if(!pos.isInsideBox(grid.position, grid.size))
+      return;
+
+    if(grid.children != null)
+    {
+      for (var i = 0; i < 3; i++)
+        for (var j = 0; j < 3; j++)
+        {
+          // Return only if grid is found
+          let retval = this.getGrid(grid.children[i][j], pos, player);
+          if(retval)
+            return retval;
+        }
+
+      return;
+    }
+
+    return grid;
+  }
+
+  // Gets the row and col of box in pos
+  this.getBox = (pos) =>
+  {
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        if(pos.isInsideBox(this.gridPoints[i][j], this.size/3))
+          return {row: i, col: j};
+  }
+
+  this.getIndexRelParent = () =>
+  {
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+      {
+        let point = this.parent.gridPoints[i][j];
+        if(point.equals(this.position))
+          return {row: i, col: j};
+      }
+  }
+
+  this.makeAllSelectable = (grid) =>
+  {
+    if(grid.children == null)
+    {
+      grid.selectable = true;
+      return;
+    }
+
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        this.makeAllSelectable(grid.children[i][j]);
+  }
+
+  this.resetSelectable = (grid) =>
+  {
+    grid.selectable = false;
+
+    if(grid.children == null)
+      return;
+
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        grid.resetSelectable(grid.children[i][j]);
+  }
+
+  this.close = () =>
+  {
+    this.closeHelper(this);
+  }
+
+  this.closeHelper = (grid) =>
+  {
+    if(grid.children == null)
+    {
+      grid.closed = true;
+      return;
+    }
+
+    grid.closed = true;
+
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        this.closeHelper(grid.children[i][j]);
+  }
+
+  this.fillBox = (row, col, player) =>
+  {
+    if(this.moves[row][col] == "X" || this.moves[row][col] == "O")
+      return;
+    if(player == 0)
+      this.moves[row][col] = "X";
+    else if(player == 1)
+      this.moves[row][col] = "O";
+    else if(row < 0 || row > 2 || col < 0 || col > 2)
+      console.error("Invalid box index!");
+    else
+      console.error("Invalid player!");
+  }
+
+  this.checkWin = (player) =>
+  {
+    let mark = player ? "O" : "X";
+
+    //Check rows
+    for(let j = 0; j < 3; j++)
+      if(this.trailCheck(j, 0, 0, 1, mark))
+        return 1;
+
+    //Check columns
+    for(let j = 0; j < 3; j++)
+      if(this.trailCheck(0, j, 1, 0, mark))
+        return 1;
+
+    //Check diagonal
+    if(this.trailCheck(0, 0, 1, 1, mark))
+      return 1;
+
+    //Check other diagonal
+    if(this.trailCheck(0, 2, 1, -1, mark))
+      return 1;
+
+    return 0;
+  }
+
+  this.trailCheck = (row, col, rDirect, cDirect, playerMark) =>
+  {
+    if(this.moves[row][col] == playerMark)
+      if(this.moves[row][col] == this.moves[row+rDirect][col+cDirect] && this.moves[row][col] == this.moves[row+2*rDirect][col+2*cDirect])
+        return true;
+
+    return false;
+  }
+
   this.addChildren = () =>
   {
     this.updateGridPoints();
@@ -167,6 +376,7 @@ function grid(x, y, _size)
       {
         let point = this.gridPoints[i][j];
         this.children[i][j] = new grid(point.x, point.y, this.size/GRID_GAP);
+        this.children[i][j].parent = this;
       }
     }
   }
@@ -182,16 +392,6 @@ function grid(x, y, _size)
     this.gridPoints[2][0] = new position(this.position.x-this.size/3, this.position.y+this.size/3);
     this.gridPoints[2][1] = new position(this.position.x, this.position.y+this.size/3);
     this.gridPoints[2][2] = new position(this.position.x+this.size/3, this.position.y+this.size/3);
-  }
-
-  this.resetSelectable = () =>
-  {
-    if(this.children == null)
-      return;
-
-    for (var i = 0; i < 3; i++)
-      for (var j = 0; j < 3; j++)
-        this.children[i][j].selectable = false;
   }
 
   this.draw = () =>
@@ -247,54 +447,6 @@ function grid(x, y, _size)
       ctx.globalAlpha = 1;
       ctx.closePath();
     }
-  }
-
-  this.fillBox = (row, col, player) =>
-  {
-    if(this.moves[row][col] == "X" || this.moves[row][col] == "O")
-      return;
-    if(player == 0)
-      this.moves[row][col] = "X";
-    else if(player == 1)
-      this.moves[row][col] = "O";
-    else
-      console.error("Invalid box index!");
-  }
-
-  this.checkWin = () =>
-  {
-    let playerMark = ["X", "O"];
-
-    for(let i = 0; i < 2; i++)
-    {
-      //Check rows
-      for(let j = 0; j < 3; j++)
-        if(this.trailCheck(j, 0, 0, 1, playerMark[i]))
-          return i+1;
-
-      //Check columns
-      for(let j = 0; j < 3; j++)
-        if(this.trailCheck(0, j, 1, 0, playerMark[i]))
-          return i+1;
-
-      //Check diagonal
-      if(this.trailCheck(0, 0, 1, 1, playerMark[i]))
-        return i+1;
-
-      //Check other diagonal
-      if(this.trailCheck(0, 2, 1, -1, playerMark[i]))
-        return i+1;
-    }
-    return 0;
-  }
-
-  this.trailCheck = (row, col, rDirect, cDirect, playerMark) =>
-  {
-    if(this.moves[row][col] == playerMark)
-      if(this.moves[row][col] == this.moves[row+rDirect][col+cDirect] && this.moves[row][col] == this.moves[row+2*rDirect][col+2*cDirect])
-        return true;
-
-    return false;
   }
 
   this.updateGridPoints();

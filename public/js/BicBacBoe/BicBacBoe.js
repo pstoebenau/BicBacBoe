@@ -9,9 +9,8 @@ zoomSlider.addEventListener("input", zoom);
 opponentID.addEventListener("input", () => pickOpponent(opponentID.value));
 window.addEventListener("resize", resizeBoard);
 
-let isDragging = false;
-let mouse = new position(0,0);
-let startMouse = new position(0,0);
+let mouse = {position: new position(0,0), isDown: false, isDragging: false};
+let startMousePos = new position(0,0);
 let startBoard = new position(0,0);
 
 let board = createBoard();
@@ -83,22 +82,22 @@ function updateClient(data)
 function startSelect(mouseX, mouseY)
 {
   if(mouseX && mouseY){
-    mouse.x = mouseX;
-    mouse.y = mouseY;
+    mouse.position.x = mouseX;
+    mouse.position.y = mouseY;
   }
   else
   {
-    mouse.x = event.clientX - canvas.getBoundingClientRect().left;
-    mouse.y = event.clientY - canvas.getBoundingClientRect().top;
+    mouse.position.x = event.clientX - canvas.getBoundingClientRect().left;
+    mouse.position.y = event.clientY - canvas.getBoundingClientRect().top;
   }
 
-  if(!isDragging)
+  if(!mouse.isDragging)
   {
     startBoard = board.position;
-    startMouse = mouse.copy();
+    startMousePos = mouse.position.copy();
   }
 
-  isDragging = true;
+  mouse.isDown = true;
 }
 
 // Update mouse variable
@@ -106,19 +105,22 @@ function updateMousePos(mouseX, mouseY)
 {
   if(mouseX && mouseY)
   {
-    mouse.x = mouseX;
-    mouse.y = mouseY;
+    mouse.position.x = mouseX;
+    mouse.position.y = mouseY;
   }
   else
   {
-    mouse.x = event.clientX - canvas.getBoundingClientRect().left;
-    mouse.y = event.clientY - canvas.getBoundingClientRect().top;
+    mouse.position.x = event.clientX - canvas.getBoundingClientRect().left;
+    mouse.position.y = event.clientY - canvas.getBoundingClientRect().top;
   }
 
+  if(mouse.isDown)
+    mouse.isDragging = true;
+
   // Moves board when dragging
-  if(isDragging)
+  if(mouse.isDragging)
   {
-    let newPos = startBoard.add(mouse.subtract(startMouse));
+    let newPos = startBoard.add(mouse.position.subtract(startMousePos));
 
     board.move(newPos);
   }
@@ -127,11 +129,16 @@ function updateMousePos(mouseX, mouseY)
 // Update board on mouse release
 function stopSelect()
 {
-  if(isDragging)
+  mouse.isDown = false;
+
+  if(mouse.isDragging)
   {
-    isDragging = false;
+    mouse.isDragging = false;
     return;
   }
+  mouse.isDragging = false;
+
+  board.createMove(mouse.position);
 
   //sendBoardData(pack);
 }
