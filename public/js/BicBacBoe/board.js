@@ -41,9 +41,7 @@ function position(x, y)
 
 function ticTacToeBoard(x, y, size, dimen)
 {
-  this.position = new position(0,0);
-  this.position.x = x;
-  this.position.y = y;
+  this.position = new position(x, y);
   this.size = size;
   this.dimensions = dimen;
   this.turn;
@@ -55,6 +53,56 @@ function ticTacToeBoard(x, y, size, dimen)
     this.turn = 0;
     this.createGrids(this.grids, this.dimensions-1);
     this.makeAllSelectable();
+  }
+
+  this.getBoardData = () =>
+  {
+    var gridData = new dataGrid();
+    this.getGridData(this.grids, gridData);
+
+    return {
+      dimensions: this.dimensions,
+      turn: this.turn,
+      gridData: gridData,
+    };
+  }
+
+  this.getGridData = (grid, gridData) =>
+  {
+    if(grid.children == null)
+    {
+      grid.getData(gridData);
+      return;
+    }
+
+    grid.getData(gridData);
+    gridData.addChildren();
+
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        this.getGridData(grid.children[i][j], gridData.children[i][j]);
+  }
+
+  this.loadBoard = (boardData) =>
+  {
+    this.changeDim(boardData.dimensions);
+    this.turn = boardData.turn;
+    this.updateGridData(this.grids, boardData.gridData);
+  }
+
+  this.updateGridData = (grid, dataGrid) =>
+  {
+    if(grid.children == null)
+    {
+      grid.updateData(dataGrid);
+      return;
+    }
+
+    grid.updateData(dataGrid);
+
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        this.updateGridData(grid.children[i][j], dataGrid.children[i][j]);
   }
 
   this.changeDim = (dimensions) =>
@@ -86,7 +134,7 @@ function ticTacToeBoard(x, y, size, dimen)
     grid = this.grids.getGrid(this.grids, pos, this.turn);
 
     if(!grid || !grid.selectable || grid.closed)
-      return;
+      return false;
 
     trail.push(grid.getBox(pos));
     grid.fillBox(trail[0].row, trail[0].col, this.turn);
@@ -101,6 +149,7 @@ function ticTacToeBoard(x, y, size, dimen)
 
     // Toggle turn on(0) and off(1)
     this.turn = (this.turn+1)%2;
+    return true;
   }
 
   this.checkAllWin = (grid, trail) =>
@@ -193,7 +242,6 @@ function grid(x, y, _size)
   const GRID_GAP = 3.3;
   this.position = new position(x, y);
   this.closed = false;
-  this.winner;
   this.selectable = false;
   this.size = _size;
   this.gridPoints = [[],[],[]];
@@ -364,6 +412,26 @@ function grid(x, y, _size)
     return false;
   }
 
+  this.getData = (data) =>
+  {
+    data.closed = this.closed;
+    data.selectable = this.selectable;
+
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        data.moves[i][j] = this.moves[i][j];
+  }
+
+  this.updateData = (grid) =>
+  {
+    this.closed = grid.closed;
+    this.selectable = grid.selectable;
+
+    for (var i = 0; i < 3; i++)
+      for (var j = 0; j < 3; j++)
+        this.moves[i][j] = grid.moves[i][j];
+  }
+
   this.addChildren = () =>
   {
     this.updateGridPoints();
@@ -450,4 +518,23 @@ function grid(x, y, _size)
   }
 
   this.updateGridPoints();
+}
+
+function dataGrid()
+{
+  this.closed = null;
+  this.selectable = null;
+  this.moves = [[],[],[]];
+  this.children = null;
+
+  this.addChildren = () =>
+  {
+    this.children = [];
+    for (var i = 0; i < 3; i++)
+    {
+      this.children[i] = [];
+      for (var j = 0; j < 3; j++)
+        this.children[i][j] = new dataGrid();
+    }
+  }
 }

@@ -72,12 +72,10 @@ function zoom()
   board.resize(size*zoomSlider.value/10);
 }
 
-function updateClient(data)
-{
-  console.log(data);
-
-  board.turn = data.turn;
-}
+socket.on('updateBoard', (data) => {
+  dimensionSlider.value = data.dimensions;
+  board.loadBoard(data);
+});
 
 function startSelect(mouseX, mouseY)
 {
@@ -138,11 +136,6 @@ function stopSelect()
   }
   mouse.isDragging = false;
 
-  board.createMove(mouse.position);
-
-  //sendBoardData(pack);
-}
-
-function selectSelectable(grids, boxSize){
-
+  if(board.createMove(mouse.position))
+    sendBoardData(board.getBoardData());
 }

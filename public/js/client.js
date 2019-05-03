@@ -1,17 +1,16 @@
 var socket = io();
 
-function sendBoardData(data){
-  socket.emit('updateBoard', data);
+function sendBoardData(data)
+{
+  socket.emit('update', data);
 }
 
-function pickOpponent(id){
-  socket.emit('updateOpponent', id);
+function pickOpponent(id)
+{
+  socket.emit('updateOpponentID', id);
 }
 
-socket.on('newBoard', function(pack){
-  updateClient(pack);
-});
-
-socket.on('socketID', function(id){
+socket.on('socketID', (id) =>
+{
   document.getElementById("clientID").innerHTML = "Client ID: " + id;
 });
