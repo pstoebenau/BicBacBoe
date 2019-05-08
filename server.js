@@ -25,7 +25,7 @@ function Player(id)
 {
   this.id = id;
   this.opponentID;
-  this.playerMark;
+  this.playerMark = 0;
   this.boardData;
 }
 
@@ -54,10 +54,8 @@ io.sockets.on('connection', (socket) =>{
 
   socket.on('setPlayerMark', (mark) =>
   {
-    player.playerMark = mark;
+    updatePlayerMarkers(player, PLAYER_LIST[player.opponentID], mark);
   });
-
-  socket.emit('getPlayerMark', player.playerMark);
 
   socket.on('update', (data) =>
   {
@@ -81,11 +79,21 @@ function getID(arr)
   return arr.length;
 }
 
+function updatePlayerMarkers(player, opponent, mark)
+{
+  player.playerMark = mark;
+  opponent.playerMark = (mark+1)%2;
+  SOCKET_LIST[player.id].emit('updatePlayerMark', player.playerMark);
+  SOCKET_LIST[opponent.id].emit('updatePlayerMark', opponent.playerMark);
+}
+
 function update(id, opponentID)
 {
   let socket = SOCKET_LIST[opponentID];
+
   if(!socket)
     return;
+
   socket.emit('updateBoard', PLAYER_LIST[id].boardData);
 }
 

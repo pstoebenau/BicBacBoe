@@ -1,17 +1,21 @@
+html, body{
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body{
   font-family: "Comic Sans MS", "Comic Sans";
   font-size: 15px;
   color: #f4f4f4;
   line-height: 1.5;
-  padding: 0;
-  margin: 0;
-  background-color: #353535;
 }
 
 /*Global*/
 canvas{
   position: absolute;
   margin: 0;
+  background-color: #353535;
 }
 
 .container{

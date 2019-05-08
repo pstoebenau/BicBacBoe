@@ -1,9 +1,13 @@
 let dimensionSlider = document.getElementById("dimensionRange");
 let zoomSlider = document.getElementById("zoomRange");
 let opponentID = document.getElementById("opponentID");
-canvas.addEventListener("mousedown", startSelect);
-canvas.addEventListener("mousemove", updateMousePos);
+canvas.addEventListener("mousedown", (e) => startSelect(e.clientX, e.clientY));
+canvas.addEventListener("mousemove", (e) => updateMousePos(e.clientX, e.clientY));
 canvas.addEventListener("mouseup", stopSelect);
+canvas.addEventListener("touchstart", (e) => startSelect(e.changedTouches[0].pageX, e.changedTouches[0].pageY), false);
+canvas.addEventListener("touchend", (e) => updateMousePos(e.changedTouches[0].pageX, e.changedTouches[0].pageY), false);
+canvas.addEventListener("touchcancel", stopSelect, false);
+canvas.addEventListener("touchmove", stopSelect, false);
 dimensionSlider.addEventListener("input", changeDim);
 zoomSlider.addEventListener("input", zoom);
 opponentID.addEventListener("input", () => pickOpponent(opponentID.value));
@@ -12,6 +16,8 @@ window.addEventListener("resize", resizeBoard);
 let mouse = {position: new position(0,0), isDown: false, isDragging: false};
 let startMousePos = new position(0,0);
 let startBoard = new position(0,0);
+
+let playerMark = 0;
 
 let board = createBoard();
 
@@ -71,22 +77,10 @@ function zoom()
   board.resize(size*zoomSlider.value/10);
 }
 
-socket.on('updateBoard', (data) => {
-  dimensionSlider.value = data.dimensions;
-  board.loadBoard(data);
-});
-
 function startSelect(mouseX, mouseY)
 {
-  if(mouseX && mouseY){
-    mouse.position.x = mouseX;
-    mouse.position.y = mouseY;
-  }
-  else
-  {
-    mouse.position.x = event.clientX - canvas.getBoundingClientRect().left;
-    mouse.position.y = event.clientY - canvas.getBoundingClientRect().top;
-  }
+  mouse.position.x = mouseX - canvas.getBoundingClientRect().left;
+  mouse.position.y = mouseY - canvas.getBoundingClientRect().top;
 
   if(!mouse.isDragging)
   {
@@ -100,16 +94,8 @@ function startSelect(mouseX, mouseY)
 // Update mouse variable
 function updateMousePos(mouseX, mouseY)
 {
-  if(mouseX && mouseY)
-  {
-    mouse.position.x = mouseX;
-    mouse.position.y = mouseY;
-  }
-  else
-  {
-    mouse.position.x = event.clientX - canvas.getBoundingClientRect().left;
-    mouse.position.y = event.clientY - canvas.getBoundingClientRect().top;
-  }
+  mouse.position.x = mouseX - canvas.getBoundingClientRect().left;
+  mouse.position.y = mouseY - canvas.getBoundingClientRect().top;
 
   if(mouse.isDown)
     mouse.isDragging = true;
@@ -135,14 +121,24 @@ async function stopSelect()
   }
   mouse.isDragging = false;
 
-  if(board.turn == 0)
-    setPlayerMark(board.turn);
+  if(opponentID.value)
+  {
+    if(board.turn == 0)
+      setPlayerMark(board.turn);
 
-  var mark = await getPlayerMark();
-
-  if(mark != board.turn%2)
-    return;
+    if(playerMark != board.turn%2)
+      return;
+  }
 
   if(board.createMove(mouse.position))
     sendBoardData(board.getBoardData());
 }
+
+socket.on('updateBoard', (data) => {
+  dimensionSlider.value = data.dimensions;
+  board.loadBoard(data);
+});
+
+socket.on('updatePlayerMark', (mark) => {
+  playerMark = mark;
+});

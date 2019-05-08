@@ -1,5 +1,4 @@
-let menuBar = document.getElementById("menuBar");
-let menuBarHeight = menuBar.clientHeight + 3;
+var container = document.getElementById("BicBacBoe");
 var canvas = document.querySelector('canvas');
 window.addEventListener("resize", resizeCanvas);
 
@@ -13,8 +12,8 @@ let frameRate = 1000/fps;
 function resizeCanvas()
 {
   //  Set canvas to bounds of container
-  canvas.width = window.innerWidth;
-  canvas.height = window.innerHeight - menuBarHeight;
+  canvas.width = container.clientWidth;
+  canvas.height = container.clientHeight;
 }
 
 // Call update function at constant frame rate

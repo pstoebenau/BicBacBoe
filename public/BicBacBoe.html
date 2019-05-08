@@ -26,9 +26,9 @@
       </div>
     </header>
 
-    <div id="BicBacBoe">
+    <div id="BicBacBoe" style=height:100%>
       <canvas></canvas>
-    </div>
+
       <div class="sideBar">
         <h3 id="clientID">Client ID: null</h3>
         <h3>Pick an opponent ID</h3>
@@ -37,9 +37,9 @@
         <input type="range" min="1" max="5" value="1" id="dimensionRange">
         <h3>Zoom</h3>
         <input type="range" min="10" max="100" value="1" id="zoomRange">
-        <button type="button" name="Fullscreen" onclick="goFullscreen" id = "fullScrnBttn">Fullscreen</button>
+        <button type="button" name="Fullscreen" id="fullScrnBttn">Fullscreen</button>
       </div>
-
+    </div>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/2.1.1/socket.io.js"></script>
     <script src="./js/client.js"></script>
@@ -51,12 +51,12 @@
       var fullscrnBttn = document.getElementById("fullScrnBttn")
 
       fullScrnBttn.addEventListener('click', function(){
-        if(canvas.webkitRequestFullscreen){
-          canvas.webkitRequestFullscreen();
+        if(BicBacBoe.webkitRequestFullscreen){
+          BicBacBoe.webkitRequestFullscreen();
         }else if (canvas.mozRequestFullscreen) {
-          canvas.mozRequestFullscreen();
+          BicBacBoe.mozRequestFullscreen();
         }else if (canvas.msRequestFullscreen) {
-          canvas.msRequestFullscreen();
+          BicBacBoe.msRequestFullscreen();
         }
       });
     </script>
