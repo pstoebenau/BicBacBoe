@@ -43,6 +43,7 @@ function ticTacToeBoard(x, y, size, dimen)
 {
   this.position = new position(x, y);
   this.size = size;
+  this.color = "silver";
   this.dimensions = dimen;
   this.turn;
   this.grids;
@@ -131,13 +132,13 @@ function ticTacToeBoard(x, y, size, dimen)
     let grid;
     let trail = [];
 
-    grid = this.grids.getGrid(this.grids, pos, this.turn);
+    grid = this.grids.getGrid(this.grids, pos, this.turn%2);
 
     if(!grid || !grid.selectable || grid.closed)
       return false;
 
     trail.push(grid.getBox(pos));
-    grid.fillBox(trail[0].row, trail[0].col, this.turn);
+    grid.fillBox(trail[0].row, trail[0].col, this.turn%2);
     this.resetSelectable();
 
     this.checkAllWin(grid, trail);
@@ -147,8 +148,7 @@ function ticTacToeBoard(x, y, size, dimen)
     if(grid.closed)
       this.makeAllSelectable();
 
-    // Toggle turn on(0) and off(1)
-    this.turn = (this.turn+1)%2;
+    this.turn++;
     return true;
   }
 
@@ -158,15 +158,15 @@ function ticTacToeBoard(x, y, size, dimen)
 
     if(grid.parent == null)
     {
-      if(grid.checkWin(this.turn))
+      if(grid.checkWin(this.turn%2))
       {
         grid.close();
-        alert("Player " + (this.turn+1) + " has won!");
+        alert("Player " + (this.turn%2+1) + " has won!");
       }
       return;
     }
 
-    if(!grid.checkWin(this.turn))
+    if(!grid.checkWin(this.turn%2))
       return;
 
     grid.close();
@@ -221,7 +221,7 @@ function ticTacToeBoard(x, y, size, dimen)
     if(dimension == 0)
       return;
 
-    grid.draw();
+    grid.draw(this.color);
 
     if(grid.children == null)
       return;
@@ -462,9 +462,10 @@ function grid(x, y, _size)
     this.gridPoints[2][2] = new position(this.position.x+this.size/3, this.position.y+this.size/3);
   }
 
-  this.draw = () =>
+  this.draw = (color) =>
   {
     // Grid
+    ctx.strokeStyle = color;
     ctx.beginPath();
     ctx.moveTo(this.position.x-this.size/6, this.position.y-this.size/2);
     ctx.lineTo(this.position.x-this.size/6, this.position.y+this.size/2);
@@ -495,16 +496,16 @@ function grid(x, y, _size)
         {
           ctx.beginPath();
           ctx.font = this.size/3 + "px Arial";
-          ctx.fillStyle = "#000";
           ctx.textBaseline = "middle";
           ctx.textAlign = "center";
+          ctx.fillStyle = color;
           ctx.fillText(this.moves[i][j], this.gridPoints[i][j].x, this.gridPoints[i][j].y);
           ctx.closePath();
         }
       }
     }
 
-    // Selectable highlight
+    // Highlight selectable grids
     if(this.selectable && !this.closed)
     {
       ctx.beginPath();

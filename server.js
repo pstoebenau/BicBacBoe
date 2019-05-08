@@ -25,6 +25,7 @@ function Player(id)
 {
   this.id = id;
   this.opponentID;
+  this.playerMark;
   this.boardData;
 }
 
@@ -50,6 +51,13 @@ io.sockets.on('connection', (socket) =>{
   {
     player.opponentID = id;
   });
+
+  socket.on('setPlayerMark', (mark) =>
+  {
+    player.playerMark = mark;
+  });
+
+  socket.emit('getPlayerMark', player.playerMark);
 
   socket.on('update', (data) =>
   {

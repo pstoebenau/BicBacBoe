@@ -62,7 +62,6 @@ function update()
 function changeDim()
 {
   board.changeDim(dimensionSlider.value);
-  //resizeBoard();
 }
 
 function zoom()
@@ -125,7 +124,7 @@ function updateMousePos(mouseX, mouseY)
 }
 
 // Update board on mouse release
-function stopSelect()
+async function stopSelect()
 {
   mouse.isDown = false;
 
@@ -135,6 +134,14 @@ function stopSelect()
     return;
   }
   mouse.isDragging = false;
+
+  if(board.turn == 0)
+    setPlayerMark(board.turn);
+
+  var mark = await getPlayerMark();
+
+  if(mark != board.turn%2)
+    return;
 
   if(board.createMove(mouse.position))
     sendBoardData(board.getBoardData());
