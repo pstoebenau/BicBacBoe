@@ -1,25 +1,54 @@
-let dimensionSlider = document.getElementById("dimensionRange");
-let zoomSlider = document.getElementById("zoomRange");
-let opponentID = document.getElementById("opponentID");
+var dimensionSlider = document.getElementById("dimensionRange");
+var zoomSlider = document.getElementById("zoomRange");
+var opponentID = document.getElementById("opponentID");
+var bicBacBoe = document.getElementById("BicBacBoe");
+var fullscrnBttn = document.getElementById("fullScrnBttn");
+var resetBttn = document.getElementById("resetBttn");
+
+// Mouse and touch controls
+// Mouse
 canvas.addEventListener("mousedown", (e) => startSelect(e.clientX, e.clientY));
 canvas.addEventListener("mousemove", (e) => updateMousePos(e.clientX, e.clientY));
 canvas.addEventListener("mouseup", stopSelect);
+document.body.addEventListener("wheel", (e) => {
+  const delta = Math.sign(e.deltaY);
+  zoom(delta);
+});
+// Touch
 canvas.addEventListener("touchstart", (e) => startSelect(e.changedTouches[0].pageX, e.changedTouches[0].pageY), false);
-canvas.addEventListener("touchend", (e) => updateMousePos(e.changedTouches[0].pageX, e.changedTouches[0].pageY), false);
+canvas.addEventListener("touchmove", (e) => updateMousePos(e.changedTouches[0].pageX, e.changedTouches[0].pageY), false);
+canvas.addEventListener("touchend", stopSelect, false);
 canvas.addEventListener("touchcancel", stopSelect, false);
-canvas.addEventListener("touchmove", stopSelect, false);
+canvas.addEventListener("gestureend", (e) => zoom(e.scale), false);
+
+// Board Controls
 dimensionSlider.addEventListener("input", changeDim);
-zoomSlider.addEventListener("input", zoom);
 opponentID.addEventListener("input", () => pickOpponent(opponentID.value));
-window.addEventListener("resize", resizeBoard);
+window.addEventListener("resize", () => resizeBoard(boardSize));
+fullScrnBttn.addEventListener('click', () => {
+  if(BicBacBoe.webkitRequestFullscreen){
+    BicBacBoe.webkitRequestFullscreen();
+  }else if (canvas.mozRequestFullscreen) {
+    BicBacBoe.mozRequestFullscreen();
+  }else if (canvas.msRequestFullscreen) {
+    BicBacBoe.msRequestFullscreen();
+  }
 
-let mouse = {position: new position(0,0), isDown: false, isDragging: false};
-let startMousePos = new position(0,0);
-let startBoard = new position(0,0);
+  resizeBoard();
+});
+resetBttn.addEventListener('click', () => {
+  resizeBoard(calcBoardSize())
+  board.initialize();
+});
 
-let playerMark = 0;
+var mouse = {position: new position(0,0), isDown: false, isDragging: false};
+var startMousePos = new position(0,0);
+var startBoard = new position(0,0);
+var boardSize = calcBoardSize();
 
-let board = createBoard();
+var playerMark = 0;
+
+var board = createBoard();
 
 function createBoard()
 {
@@ -48,12 +77,10 @@ function calcBoardSize()
   return size;
 }
 
-function resizeBoard()
+function resizeBoard(size)
 {
-  let size = calcBoardSize();
-
   // Resize board according to zoom and screen size
-  board.resize(size*zoomSlider.value/10);
+  board.resize(size);
   board.move(new position(canvas.width/2, canvas.height/2));
 }
 
@@ -70,11 +97,11 @@ function changeDim()
   board.changeDim(dimensionSlider.value);
 }
 
-function zoom()
+function zoom(amount)
 {
-  let size = calcBoardSize();
+  boardSize += amount*boardSize/10;
 
-  board.resize(size*zoomSlider.value/10);
+  board.resize(boardSize);
 }
 
 function startSelect(mouseX, mouseY)

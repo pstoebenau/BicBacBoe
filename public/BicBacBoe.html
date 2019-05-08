@@ -6,7 +6,7 @@
     <title>¯\_(ツ)_/¯</title>
     <link rel="stylesheet" href="./css/style.css">
   </head>
-  <body>
+  <body style="display:flex; flex-direction:column">
     <header id="menuBar">
       <div id="background"></div>
       <div class="container">
@@ -26,18 +26,27 @@
       </div>
     </header>
 
-    <div id="BicBacBoe" style=height:100%>
+    <div id="BicBacBoe" style=flex:1>
       <canvas></canvas>
 
       <div class="sideBar">
         <h3 id="clientID">Client ID: null</h3>
-        <h3>Pick an opponent ID</h3>
-        <input type="number" min="0" max="99999" id="opponentID">
+        <h3>Enter opponent ID</h3>
+        <input type="number" min="0" max="99999" class="numInput" id="opponentID">
+      </div>
+
+      <div id="topBar">
         <h3>BicBacBoe Dimensions</h3>
-        <input type="range" min="1" max="5" value="1" id="dimensionRange">
-        <h3>Zoom</h3>
-        <input type="range" min="10" max="100" value="1" id="zoomRange">
-        <button type="button" name="Fullscreen" id="fullScrnBttn">Fullscreen</button>
+        <input type="range" min="1" max="5" value="1" class="slider" id="dimensionRange">
+      </div>
+
+      <div id="controls">
+        <button type="button" name="Fullscreen" id="fullScrnBttn">
+          <img src="./img/fullscreen.png" alt="Fullscreen" width="50px">
+        </button>
+        <button type="button" name="Reset" id="resetBttn">
+          <img src="./img/reset.png" alt="Reset" width="50px">
+        </button>
       </div>
     </div>
 
@@ -46,19 +55,5 @@
     <script src="./js/canvasSetup.js"></script>
     <script src="./js/BicBacBoe/board.js"></script>
     <script src="./js/BicBacBoe/BicBacBoe.js"></script>
-    <script type="text/javascript">
-      var BicBacBoe = document.getElementById("BicBacBoe");
-      var fullscrnBttn = document.getElementById("fullScrnBttn")
-
-      fullScrnBttn.addEventListener('click', function(){
-        if(BicBacBoe.webkitRequestFullscreen){
-          BicBacBoe.webkitRequestFullscreen();
-        }else if (canvas.mozRequestFullscreen) {
-          BicBacBoe.mozRequestFullscreen();
-        }else if (canvas.msRequestFullscreen) {
-          BicBacBoe.msRequestFullscreen();
-        }
-      });
-    </script>
   </body>
 </html>
