@@ -6,7 +6,7 @@ html, body{
 }
 
 body{
-  position: relative;
+  position: fixed;
   font-family: "Comic Sans MS", "Comic Sans";
   font-size: 15px;
   color: #f4f4f4;
