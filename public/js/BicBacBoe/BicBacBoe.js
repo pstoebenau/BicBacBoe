@@ -15,27 +15,16 @@ document.body.addEventListener("wheel", (e) => {
   zoom(delta);
 });
 // Touch
-canvas.addEventListener("touchstart", (e) => startSelect(e.changedTouches[0].pageX, e.changedTouches[0].pageY), false);
-canvas.addEventListener("touchmove", (e) => updateMousePos(e.changedTouches[0].pageX, e.changedTouches[0].pageY), false);
-canvas.addEventListener("touchend", stopSelect, false);
-canvas.addEventListener("touchcancel", stopSelect, false);
-canvas.addEventListener("gestureend", (e) => zoom(e.scale), false);
+canvas.addEventListener("touchstart", startTouch, false);
+canvas.addEventListener("touchmove", moveTouch, false);
+canvas.addEventListener("touchend", stopTouch, false);
+canvas.addEventListener("touchcancel", stopTouch, false);
 
 // Board Controls
 dimensionSlider.addEventListener("input", changeDim);
 opponentID.addEventListener("input", () => pickOpponent(opponentID.value));
-window.addEventListener("resize", () => resizeBoard(boardSize));
-fullScrnBttn.addEventListener('click', () => {
-  if(BicBacBoe.webkitRequestFullscreen){
-    BicBacBoe.webkitRequestFullscreen();
-  }else if (canvas.mozRequestFullscreen) {
-    BicBacBoe.mozRequestFullscreen();
-  }else if (canvas.msRequestFullscreen) {
-    BicBacBoe.msRequestFullscreen();
-  }
-
-  resizeBoard();
-});
+window.addEventListener("resize", () => resizeBoard(calcBoardSize()));
+fullScrnBttn.addEventListener('click', toggleFullScreen);
 resetBttn.addEventListener('click', () => {
   resizeBoard(calcBoardSize())
   board.initialize();
@@ -43,12 +32,47 @@ resetBttn.addEventListener('click', () => {
 
 var mouse = {position: new position(0,0), isDown: false, isDragging: false};
 var startMousePos = new position(0,0);
+var startTouchDistance = 0;
+var isPinching = false;
 var startBoard = new position(0,0);
 var boardSize = calcBoardSize();
 
 var playerMark = 0;
 
 var board = createBoard();
+
+function toggleFullScreen()
+{
+  var doc = window.document;
+  var docEl = bicBacBoe;
+
+  var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen || psuedoFullscreen;
+  var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen || psuedoFullscreen;
+
+  if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement)
+    requestFullScreen.call(docEl);
+  else
+    cancelFullScreen.call(doc);
+}
+
+function psuedoFullscreen()
+{
+  let menuBar = document.getElementById("menuBar");
+
+  if(menuBar.style.display == "none")
+  {
+    window.scrollTo(1, 0);
+    menuBar.style.display = "block";
+  }
+  else
+  {
+    window.scrollTo(0, 1);
+    menuBar.style.display = "none";
+  }
+
+  resizeCanvas();
+  resizeBoard(calcBoardSize());
+}
 
 function createBoard()
 {
@@ -82,6 +106,7 @@ function resizeBoard(size)
   // Resize board according to zoom and screen size
   board.resize(size);
   board.move(new position(canvas.width/2, canvas.height/2));
+  boardSize = board.size;
 }
 
 // Game loop
@@ -102,6 +127,80 @@ function zoom(amount)
   boardSize += amount*boardSize/10;
 
   board.resize(boardSize);
+}
+
+function startTouch()
+{
+  event.preventDefault();
+
+  let touch = new position(event.touches[0].pageX, event.touches[0].pageY);
+
+  if(event.touches.length >= 2)
+  {
+    let secondTouch = new position(event.touches[1].pageX, event.touches[1].pageY);
+    startTouchDistance = touch.distance(secondTouch);
+  }
+
+  if(isPinching)
+    return;
+
+  startSelect(touch.x, touch.y);
+}
+
+function moveTouch()
+{
+  let touch = new position(event.touches[0].pageX, event.touches[0].pageY);
+
+  event.preventDefault();
+
+  if(event.touches.length >= 2)
+  {
+    let secondTouch = new position(event.touches[1].pageX, event.touches[1].pageY);
+    let touchDistance = touch.distance(secondTouch);
+    let delta = touchDistance-startTouchDistance;
+
+    // Zoom relative to center of screen
+    let center = new position(canvas.width/2, canvas.height/2);
+    let changeInSize = boardSize;
+    zoom(delta/10);
+    changeInSize = boardSize-changeInSize;
+    board.move(board.position.add());
+
+    // Calculate for next move
+    secondTouch = new position(event.touches[1].pageX, event.touches[1].pageY);
+    startTouchDistance = touch.distance(secondTouch);
+
+    isPinching = true;
+    return;
+  }
+
+  if(isPinching)
+    return;
+
+  isPinching = false;
+  updateMousePos(touch.x, touch.y)
+}
+
+function stopTouch()
+{
+  if(event.touches.length <= 0 && isPinching)
+  {
+    mouse.isDown = false;
+
+    if(mouse.isDragging)
+    {
+      mouse.isDragging = false;
+      return;
+    }
+    mouse.isDragging = false;
+
+    isPinching = false;
+    return;
+  }
+  if(isPinching)
+    return;
+
+  stopSelect();
 }
 
 function startSelect(mouseX, mouseY)
@@ -137,7 +236,7 @@ function updateMousePos(mouseX, mouseY)
 }
 
 // Update board on mouse release
-async function stopSelect()
+function stopSelect()
 {
   mouse.isDown = false;
 

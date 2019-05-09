@@ -47,16 +47,14 @@ function calculate(){
   localStorage.setItem("num2", num2);
 
   if(num2 !== null || num2 !== ""){
-    if(operand === "÷"){
-      console.log(num1);
+    if(operand === "÷")
       answer.textContent = (num1/num2);
-    }else if(operand === "×"){
+    else if(operand === "×")
       answer.textContent = (num1*num2);
-    }else if(operand === "-"){
+    else if(operand === "-")
       answer.textContent = (num1-num2);
-    }else if(operand === "+"){
+    else if(operand === "+")
       answer.textContent = (num1+num2);
-    }
   }
 
   if(answer.textContent.indexOf(".") !== -1)

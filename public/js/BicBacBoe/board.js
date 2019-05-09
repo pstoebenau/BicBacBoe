@@ -3,7 +3,7 @@ function position(x, y)
   this.x = x;
   this.y = y;
 
-  this.add = (pos) =>
+  this.add = (val) =>
   {
     return new position(this.x + pos.x, this.y + pos.y);
   }
@@ -11,6 +11,14 @@ function position(x, y)
   this.subtract = (pos) =>
   {
     return new position(this.x - pos.x, this.y - pos.y);
+  }
+
+  this.distance = (pos) =>
+  {
+    let distance = Math.pow(this.x-pos.x, 2);
+    distance += Math.pow(this.y-pos.y, 2);
+    distance = Math.sqrt(distance, 2);
+    return distance;
   }
 
   this.equals = (pos) =>
@@ -130,6 +138,7 @@ function ticTacToeBoard(x, y, size, dimen)
   this.createMove = (pos) =>
   {
     let grid;
+    let gridBox;
     let trail = [];
 
     grid = this.grids.getGrid(this.grids, pos, this.turn%2);
@@ -137,10 +146,17 @@ function ticTacToeBoard(x, y, size, dimen)
     if(!grid || !grid.selectable || grid.closed)
       return false;
 
-    trail.push(grid.getBox(pos));
-    grid.fillBox(trail[0].row, trail[0].col, this.turn%2);
+    // Get index of box corresponding to pos
+    gridBox = grid.getBox(pos);
+    // Check if box is already filled
+    if(grid.moves[gridBox.row][gridBox.col])
+      return false;
+    trail.push(gridBox);
+
+    grid.fillBox(gridBox.row, gridBox.col, this.turn%2);
     this.resetSelectable();
 
+    // Check for wins
     this.checkAllWin(grid, trail);
     grid = this.getNextGrid(grid, trail, 0);
     grid.selectable = true;
@@ -155,10 +171,11 @@ function ticTacToeBoard(x, y, size, dimen)
   this.checkAllWin = (grid, trail) =>
   {
     let index;
+    let win = grid.checkWin(this.turn%2);
 
     if(grid.parent == null)
     {
-      if(grid.checkWin(this.turn%2))
+      if(win)
       {
         grid.close();
         alert("Player " + (this.turn%2+1) + " has won!");
@@ -166,12 +183,12 @@ function ticTacToeBoard(x, y, size, dimen)
       return;
     }
 
-    if(!grid.checkWin(this.turn%2))
+    if(!win)
       return;
 
     grid.close();
     index = grid.getIndexRelParent();
-    grid.parent.fillBox(index.row, index.col, this.turn);
+    grid.parent.fillBox(index.row, index.col, this.turn%2);
     trail.push(index);
 
     this.checkAllWin(grid.parent, trail);
