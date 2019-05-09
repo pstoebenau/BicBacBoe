@@ -3,7 +3,7 @@ function position(x, y)
   this.x = x;
   this.y = y;
 
-  this.add = (val) =>
+  this.add = (pos) =>
   {
     return new position(this.x + pos.x, this.y + pos.y);
   }
