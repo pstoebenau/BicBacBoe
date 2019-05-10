@@ -158,13 +158,7 @@ function moveTouch()
     let secondTouch = new position(event.touches[1].pageX, event.touches[1].pageY);
     let touchDistance = touch.distance(secondTouch);
     let delta = touchDistance-startTouchDistance;
-
-    // Zoom relative to center of screen
-    let center = new position(canvas.width/2, canvas.height/2);
-    let changeInSize = boardSize;
     zoom(delta/10);
-    changeInSize = boardSize-changeInSize;
-    board.move(board.position.add());
 
     // Calculate for next move
     secondTouch = new position(event.touches[1].pageX, event.touches[1].pageY);
@@ -255,6 +249,8 @@ function stopSelect()
     if(playerMark != board.turn%2)
       return;
   }
+
+  console.log();
 
   if(board.createMove(mouse.position))
     sendBoardData(board.getBoardData());
