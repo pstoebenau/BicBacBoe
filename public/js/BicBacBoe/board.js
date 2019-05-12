@@ -13,12 +13,22 @@ function position(x, y)
     return new position(this.x - pos.x, this.y - pos.y);
   }
 
+  this.mult = (x) =>
+  {
+    return new position(this.x * x, this.y * x);
+  }
+
   this.distance = (pos) =>
   {
     let distance = Math.pow(this.x-pos.x, 2);
     distance += Math.pow(this.y-pos.y, 2);
     distance = Math.sqrt(distance, 2);
     return distance;
+  }
+
+  this.angle = (pos) =>
+  {
+    return Math.atan((this.y-pos.y)/(this.x-pos.x));
   }
 
   this.equals = (pos) =>
@@ -330,8 +340,8 @@ function grid(x, y, _size)
     for (var i = 0; i < 3; i++)
       for (var j = 0; j < 3; j++)
       {
-        let point = this.parent.gridPoints[i][j];
-        if(point.equals(this.position))
+        let grid = this.parent.children[i][j];
+        if(this == grid)
           return {row: i, col: j};
       }
   }
@@ -431,12 +441,22 @@ function grid(x, y, _size)
 
   this.getData = (data) =>
   {
+    let isNull = true;
+
     data.closed = this.closed;
     data.selectable = this.selectable;
 
     for (var i = 0; i < 3; i++)
       for (var j = 0; j < 3; j++)
+      {
+        if(this.moves[i][j])
+          isNull = false;
+
         data.moves[i][j] = this.moves[i][j];
+      }
+
+    if(isNull)
+      data.moves = null;
   }
 
   this.updateData = (grid) =>
@@ -446,7 +466,7 @@ function grid(x, y, _size)
 
     for (var i = 0; i < 3; i++)
       for (var j = 0; j < 3; j++)
-        this.moves[i][j] = grid.moves[i][j];
+        this.moves[i][j] = (grid.moves == null) ? null : grid.moves[i][j];
   }
 
   this.addChildren = () =>

@@ -26,7 +26,9 @@ function setFrameRate()
 
   if(elapsed >= frameRate){
     past = Date.now() - (elapsed%(1000/fps));
-    update();
+
+    if(typeof update === "function")
+      update();
   }
 }
 

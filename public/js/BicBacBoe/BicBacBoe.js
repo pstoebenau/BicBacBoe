@@ -124,9 +124,21 @@ function changeDim()
 
 function zoom(amount)
 {
-  boardSize += amount*boardSize/10;
+  let movPos;
+  let center = new position(canvas.width/2, canvas.height/2);
+  let deltaSize = boardSize;
 
+  boardSize += amount*boardSize/10;
   board.resize(boardSize);
+
+  // Scale with respect to center
+  // MATH!
+  deltaSize = boardSize/deltaSize;
+  movPos = center.subtract(board.position);
+  movPos = movPos.mult(deltaSize);
+  movPos = movPos.add(board.position);
+  movPos = movPos.subtract(center);
+  board.move(board.position.subtract(movPos));
 }
 
 function startTouch()
@@ -155,6 +167,7 @@ function moveTouch()
 
   if(event.touches.length >= 2)
   {
+    // Scale Board
     let secondTouch = new position(event.touches[1].pageX, event.touches[1].pageY);
     let touchDistance = touch.distance(secondTouch);
     let delta = touchDistance-startTouchDistance;
