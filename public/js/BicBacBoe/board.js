@@ -63,7 +63,7 @@ function ticTacToeBoard(x, y, size, dimen)
   this.size = size;
   this.color = "silver";
   this.dimensions = dimen;
-  this.turn;
+  this.turn
   this.grids;
 
   this.initialize = () =>
@@ -71,7 +71,7 @@ function ticTacToeBoard(x, y, size, dimen)
     this.grids = new grid(this.position.x, this.position.y, this.size);
     this.turn = 0;
     this.createGrids(this.grids, this.dimensions-1);
-    this.makeAllSelectable();
+    this.makeAllSelectable(this.grids, 0);
   }
 
   this.getBoardData = () =>
@@ -172,7 +172,7 @@ function ticTacToeBoard(x, y, size, dimen)
     grid.selectable = true;
 
     if(grid.closed)
-      this.makeAllSelectable();
+      this.makeAllSelectable(grid, trail.length);
 
     this.turn++;
     return true;
@@ -233,9 +233,13 @@ function ticTacToeBoard(x, y, size, dimen)
         this.createGrids(grid.children[i][j], dimension-1);
   }
 
-  this.makeAllSelectable = () =>
+  this.makeAllSelectable = (grid, depth) =>
   {
-    this.grids.makeAllSelectable(this.grids);
+    for (var i = 0; i < depth; i++) {
+      grid = grid.parent;
+    }
+
+    grid.makeAllSelectable(grid);
   }
 
   this.resetSelectable = () =>

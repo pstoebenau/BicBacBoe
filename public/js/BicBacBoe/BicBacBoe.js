@@ -4,6 +4,7 @@ var opponentID = document.getElementById("opponentID");
 var bicBacBoe = document.getElementById("BicBacBoe");
 var fullscrnBttn = document.getElementById("fullScrnBttn");
 var resetBttn = document.getElementById("resetBttn");
+var downloadBttn = document.getElementById("downloadBttn");
 
 // Mouse and touch controls
 // Mouse
@@ -29,6 +30,7 @@ resetBttn.addEventListener('click', () => {
   resizeBoard(calcBoardSize())
   board.initialize();
 });
+downloadBttn.addEventListener('click', () => download("save.txt", JSON.stringify(board.getBoardData())));
 
 var mouse = {position: new position(0,0), isDown: false, isDragging: false};
 var startMousePos = new position(0,0);
@@ -40,6 +42,20 @@ var boardSize = calcBoardSize();
 var playerMark = 0;
 
 var board = createBoard();
+
+function download(filename, text)
+{
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+  element.setAttribute('download', filename);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
 
 function toggleFullScreen()
 {
@@ -125,19 +141,19 @@ function changeDim()
 function zoom(amount)
 {
   let movPos;
-  let center = new position(canvas.width/2, canvas.height/2);
+  //let center = new position(canvas.width/2, canvas.height/2);
   let deltaSize = boardSize;
 
   boardSize += amount*boardSize/10;
   board.resize(boardSize);
 
-  // Scale with respect to center
+  // Scale with respect to mouse position
   // MATH!
   deltaSize = boardSize/deltaSize;
-  movPos = center.subtract(board.position);
+  movPos = mouse.position.subtract(board.position);
   movPos = movPos.mult(deltaSize);
   movPos = movPos.add(board.position);
-  movPos = movPos.subtract(center);
+  movPos = movPos.subtract(mouse.position);
   board.move(board.position.subtract(movPos));
 }
 
@@ -262,8 +278,6 @@ function stopSelect()
     if(playerMark != board.turn%2)
       return;
   }
-
-  console.log();
 
   if(board.createMove(mouse.position))
     sendBoardData(board.getBoardData());
