@@ -1,36 +1,54 @@
-var container = document.getElementById("BicBacBoe");
-var canvas = document.querySelector('canvas');
-window.addEventListener("resize", resizeCanvas);
-
-let ctx = canvas.getContext("2d");
-
-let fps = 60;
-let past = Date.now();
-let elapsed = 0;
-let frameRate = 1000/fps;
-
-function resizeCanvas()
+export default class CanvasSetup
 {
-  //  Set canvas to bounds of container
-  canvas.width = container.clientWidth;
-  canvas.height = container.clientHeight;
-}
+  container;
+  canvas;
+  ctx;
+  fps;
+  past;
+  elapsed;
+  frameRate;
+  update;
 
-// Call update function at constant frame rate
-function setFrameRate()
-{
-  // Game loop
-  requestAnimationFrame(setFrameRate);
+  constructor(update)
+  {
+    this.container = document.getElementById("BicBacBoe");
+    this.canvas = document.querySelector('canvas');
+    this.ctx = this.canvas.getContext("2d");
 
-  elapsed = Date.now() - past;
+    this.fps = 60;
+    this.past = Date.now();
+    this.elapsed = 0;
+    this.frameRate = 1000/this.fps;
 
-  if(elapsed >= frameRate){
-    past = Date.now() - (elapsed%(1000/fps));
+    this.update = update;
 
-    if(typeof update === "function")
-      update();
+    window.addEventListener("resize", this.resizeCanvas);
+
+    this.resizeCanvas();
+    this.setFrameRate();
   }
-}
 
-resizeCanvas();
-setFrameRate();
+  resizeCanvas()
+  {
+    //  Set canvas to bounds of container
+    this.canvas.width = this.container.clientWidth;
+    this.canvas.height = this.container.clientHeight;
+  }
+
+  // Call update function at constant frame rate
+  setFrameRate()
+  {
+    // Game loop
+    requestAnimationFrame(() => this.setFrameRate());
+
+    this.elapsed = Date.now() - this.past;
+
+    if(this.elapsed >= this.frameRate)
+    {
+      this.past = Date.now() - (this.elapsed%this.frameRate);
+
+      this.update();
+    }
+  }
+
+}
