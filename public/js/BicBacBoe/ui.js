@@ -1,5 +1,5 @@
 import Position from "../aux/Position.js";
-import Client from "../client.ts";
+import Client from "../client.js";
 
 export default class UI
 {

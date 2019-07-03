@@ -1,4 +1,4 @@
-export default class CanvasSetup
+class CanvasSetup
 {
   container;
   canvas;
@@ -52,3 +52,5 @@ export default class CanvasSetup
   }
 
 }
+
+module.exports = CanvasSetup;
