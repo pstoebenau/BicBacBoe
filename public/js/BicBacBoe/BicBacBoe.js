@@ -1,7 +1,7 @@
 import UI from "./ui.js";
 import CanvasSetup from "../canvasSetup.js";
-import Board from './Board.js';
-import Position from '../aux/Position.js';
+import Board from './board.js';
+import Position from '../misc/position.js';
 
 const canvasSetup = new CanvasSetup(update);
 const board = createBoard(1);

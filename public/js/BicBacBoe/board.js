@@ -1,6 +1,6 @@
-import Position from "../aux/Position.js";
-import Grid from "./Grid.js"
-import DataGrid from "./DataGrid.js"
+import Position from "../misc/position.js";
+import Grid from "./grid.js"
+import DataGrid from "./dataGrid.js"
 
 export default class Board
 {

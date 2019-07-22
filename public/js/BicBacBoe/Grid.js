@@ -1,4 +1,4 @@
-import Position from "../aux/Position.js";
+import Position from "../misc/position.js";
 
 export default class Grid
 {

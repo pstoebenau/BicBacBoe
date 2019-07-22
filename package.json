@@ -4,7 +4,7 @@
   "description": "Multidimensional Tic Tac Toe",
   "main": "server.js",
   "scripts": {
-    "build": "webpack",
+    "build": "",
     "start": "node server.js"
   },
   "repository": {
@@ -18,13 +18,9 @@
   },
   "homepage": "https://github.com/pstoebenau/BicBacBoe#readme",
   "dependencies": {
-    "@types/socket.io-client": "^1.4.32",
     "express": "^4.16.4",
     "socket.io": "^2.2.0",
     "socket.io-client": "^2.2.0"
   },
-  "devDependencies": {
-    "webpack": "^4.34.0",
-    "webpack-cli": "^3.3.4"
-  }
+  "devDependencies": {}
 }

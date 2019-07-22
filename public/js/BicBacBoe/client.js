@@ -6,7 +6,7 @@ export default class Client
 
   constructor()
   {
-    this.socket = io();
+    this.socket = io.connect();
     console.log(this.socket);
 
     this.socket.on('socketID', (id) =>
