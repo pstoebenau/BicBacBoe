@@ -171,6 +171,7 @@ function ticTacToeBoard(x, y, size, dimen)
     grid = this.getNextGrid(grid, trail, 0);
     grid.selectable = true;
 
+    console.log(trail.length);
     if(grid.closed)
       this.makeAllSelectable(grid, trail.length);
 
@@ -236,6 +237,9 @@ function ticTacToeBoard(x, y, size, dimen)
   this.makeAllSelectable = (grid, depth) =>
   {
     for (var i = 0; i < depth; i++) {
+      if(!grid.parent)
+        break;
+
       grid = grid.parent;
     }
 
