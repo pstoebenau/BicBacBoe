@@ -2,13 +2,17 @@ import UI from "./ui.js";
 import CanvasSetup from "../canvasSetup.js";
 import Board from './board.js';
 import Position from '../misc/position.js';
+import Client from "./client.js";
 
 const canvasSetup = new CanvasSetup(update);
 const board = createBoard(1);
-const ui = new UI(board, canvasSetup);
+const client = new Client(io);
+const ui = new UI(board, canvasSetup.canvas, client);
 
 var boardSize = calcBoardSize();
-var playerMark = 0;
+
+// Allows debugging in developer console
+window.board = board;
 
 function createBoard(dimensions)
 {
@@ -45,11 +49,11 @@ function update()
   board.update();
 }
 
-socket.on('updateBoard', (data) => {
-  dimensionSlider.value = data.dimensions;
+client.socket.on('updateBoard', (data) => {
+  ui.dimensionSlider.value = data.dimensions;
   board.loadBoard(data);
 });
 
-socket.on('updatePlayerMark', (mark) => {
-  playerMark = mark;
+client.socket.on('updatePlayerMark', (mark) => {
+  ui.playerMark = mark;
 });

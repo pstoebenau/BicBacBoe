@@ -1,13 +1,10 @@
-import io from 'socket.io-client';
-
 export default class Client
 {
   socket;
 
-  constructor()
+  constructor(io)
   {
     this.socket = io.connect();
-    console.log(this.socket);
 
     this.socket.on('socketID', (id) =>
     {

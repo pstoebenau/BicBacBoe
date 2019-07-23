@@ -33,7 +33,7 @@ export default class Grid
 
     for (var i = 0; i < 3; i++)
       for (var j = 0; j < 3; j++)
-        grid.children[i][j].resize(grid.children[i][j], size/GRID_GAP, grid.gridPoints[i][j]);
+        grid.children[i][j].resize(grid.children[i][j], size/this.GRID_GAP, grid.gridPoints[i][j]);
   }
 
   move(grid, posChange)

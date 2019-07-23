@@ -1,10 +1,11 @@
 import Position from "../misc/position.js";
-import Client from "./client.js";
 
 export default class UI
 {
-  canvasSetup;
+  client;
+  canvas;
   board;
+  playerMark = 0;
   // Buttons & sliders
   dimensionSlider;
   zoomSlider;
@@ -19,10 +20,11 @@ export default class UI
   isPinching;
   startBoard;
 
-  constructor(board, canvasSetup)
+  constructor(board, canvas, client)
   {
+    this.client = client;
     this.board = board;
-    this.canvasSetup = canvasSetup;
+    this.canvas = canvas;
 
     this.dimensionSlider = document.getElementById("dimensionRange");
     this.zoomSlider = document.getElementById("zoomRange");
@@ -39,27 +41,27 @@ export default class UI
 
     // Mouse and touch controls
     // Mouse
-    canvasSetup.canvas.addEventListener("mousedown", (e) => this.startSelect(e.clientX, e.clientY));
-    canvasSetup.canvas.addEventListener("mousemove", (e) => this.updateMousePos(e.clientX, e.clientY));
-    canvasSetup.canvas.addEventListener("mouseup", () => this.stopSelect());
+    this.canvas.addEventListener("mousedown", (e) => this.startSelect(e.clientX, e.clientY));
+    this.canvas.addEventListener("mousemove", (e) => this.updateMousePos(e.clientX, e.clientY));
+    this.canvas.addEventListener("mouseup", () => this.stopSelect());
     document.body.addEventListener("wheel", (e) => {
       const delta = Math.sign(e.deltaY);
-      zoom(delta);
+      this.zoom(delta);
     });
     // Touch
-    canvasSetup.canvas.addEventListener("touchstart", () => this.startTouch(), false);
-    canvasSetup.canvas.addEventListener("touchmove", () => this.moveTouch(), false);
-    canvasSetup.canvas.addEventListener("touchend", () => this.stopTouch(), false);
-    canvasSetup.canvas.addEventListener("touchcancel", () => this.stopTouch(), false);
+    this.canvas.addEventListener("touchstart", () => this.startTouch(), false);
+    this.canvas.addEventListener("touchmove", () => this.moveTouch(), false);
+    this.canvas.addEventListener("touchend", () => this.stopTouch(), false);
+    this.canvas.addEventListener("touchcancel", () => this.stopTouch(), false);
 
     // Board Controls
     this.dimensionSlider.addEventListener("input", () => this.changeDim());
-    this.opponentID.addEventListener("input", () => this.pickOpponent(opponentID.value));
-    window.addEventListener("resize", () => this.resizeBoard(calcBoardSize()));
+    this.opponentID.addEventListener("input", () => this.client.pickOpponent(opponentID.value));
+    window.addEventListener("resize", () => this.resizeBoard(this.calcBoardSize()));
     this.fullScrnBttn.addEventListener('click', () => this.psuedoFullscreen());
     this.resetBttn.addEventListener('click', () => {
       this.resizeBoard(this.calcBoardSize());
-      board.reset();
+      this.board.reset();
     });
   }
 
@@ -100,10 +102,10 @@ export default class UI
   {
     let size;
 
-    if(this.canvasSetup.canvas.width < this.canvasSetup.canvas.height)
-      size = this.canvasSetup.canvas.width/2;
+    if(this.canvas.width < this.canvas.height)
+      size = this.canvas.width/2;
     else
-      size = this.canvasSetup.canvas.height/2;
+      size = this.canvas.height/2;
 
     return size;
   }
@@ -112,8 +114,7 @@ export default class UI
   {
     // Resize board according to zoom and screen size
     this.board.resize(size);
-    this.board.move(new Position(this.canvasSetup.canvas.width/2, this.canvasSetup.canvas.height/2));
-    this.boardSize = this.board.size;
+    this.board.move(new Position(this.canvas.width/2, this.canvas.height/2));
   }
 
   changeDim()
@@ -125,19 +126,20 @@ export default class UI
   {
     let movPos;
     let center = new Position(this.canvas.width/2, this.canvas.height/2);
-    let deltaSize = this.boardSize;
-
-    this.boardSize += amount*this.boardSize/10;
-    this.board.resize(this.boardSize);
+    let boardSize = this.board.size;
+    let deltaSize = this.board.size;
+    
+    boardSize += amount*this.board.size/10;
+    this.board.resize(boardSize);
 
     // Scale with respect to center
     // MATH!
     deltaSize = boardSize/deltaSize;
-    movPos = center.subtract(board.position);
+    movPos = center.subtract(this.board.position);
     movPos = movPos.mult(deltaSize);
-    movPos = movPos.add(board.position);
+    movPos = movPos.add(this.board.position);
     movPos = movPos.subtract(center);
-    this.board.move(board.position.subtract(movPos));
+    this.board.move(this.board.position.subtract(movPos));
   }
 
   startTouch()
@@ -170,7 +172,7 @@ export default class UI
       let secondTouch = new Position(event.touches[1].pageX, event.touches[1].pageY);
       let touchDistance = touch.distance(secondTouch);
       let delta = touchDistance-startTouchDistance;
-      zoom(delta/10);
+      this.zoom(delta/10);
 
       // Calculate for next move
       secondTouch = new Position(event.touches[1].pageX, event.touches[1].pageY);
@@ -206,13 +208,13 @@ export default class UI
     if(this.isPinching)
       return;
 
-    stopSelect();
+    this.stopSelect();
   }
 
   startSelect(mouseX, mouseY)
   {
-    this.mouse.position.x = mouseX - this.canvasSetup.canvas.getBoundingClientRect().left;
-    this.mouse.position.y = mouseY - this.canvasSetup.canvas.getBoundingClientRect().top;
+    this.mouse.position.x = mouseX - this.canvas.getBoundingClientRect().left;
+    this.mouse.position.y = mouseY - this.canvas.getBoundingClientRect().top;
 
     if(!this.mouse.isDragging)
     {
@@ -226,8 +228,8 @@ export default class UI
   // Update mouse variable
   updateMousePos(mouseX, mouseY)
   {
-    this.mouse.position.x = mouseX - this.canvasSetup.canvas.getBoundingClientRect().left;
-    this.mouse.position.y = mouseY - this.canvasSetup.canvas.getBoundingClientRect().top;
+    this.mouse.position.x = mouseX - this.canvas.getBoundingClientRect().left;
+    this.mouse.position.y = mouseY - this.canvas.getBoundingClientRect().top;
 
     if(this.mouse.isDown)
       this.mouse.isDragging = true;
@@ -256,13 +258,13 @@ export default class UI
     if(this.opponentID.value)
     {
       if(this.board.turn == 0)
-        setPlayerMark(board.turn);
+        this.client.setPlayerMark(this.board.turn);
 
       if(this.playerMark != this.board.turn%2)
         return;
     }
 
     if(this.board.createMove(this.mouse.position))
-      sendBoardData(this.board.getBoardData());
+      this.client.sendBoardData(this.board.getBoardData());
   }
 }
