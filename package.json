@@ -4,7 +4,7 @@
   "description": "Multidimensional Tic Tac Toe",
   "main": "server.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "",
     "start": "node server.js"
   },
   "repository": {
@@ -19,6 +19,8 @@
   "homepage": "https://github.com/pstoebenau/BicBacBoe#readme",
   "dependencies": {
     "express": "^4.16.4",
-    "socket.io": "^2.2.0"
-  }
+    "socket.io": "^2.2.0",
+    "socket.io-client": "^2.2.0"
+  },
+  "devDependencies": {}
 }
