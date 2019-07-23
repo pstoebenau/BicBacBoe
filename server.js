@@ -54,6 +54,12 @@ io.sockets.on('connection', (socket) =>{
 
   socket.on('setPlayerMark', (mark) =>
   {
+    if(!PLAYER_LIST[player.opponentID])
+    {
+      console.error("No oppenent specified");
+      return;
+    }
+
     updatePlayerMarkers(player, PLAYER_LIST[player.opponentID], mark);
   });
 
