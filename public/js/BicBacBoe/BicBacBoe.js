@@ -7,7 +7,7 @@ import Client from "./client.js";
 const canvasSetup = new CanvasSetup(update);
 const board = createBoard(1);
 const client = new Client(io);
-const ui = new UI(board, canvasSetup.canvas, client);
+const ui = new UI(board, canvasSetup, client);
 
 var boardSize = calcBoardSize();
 

@@ -4,6 +4,7 @@ export default class UI
 {
   client;
   canvas;
+  canvasSetup;
   board;
   playerMark = 0;
   // Buttons & sliders
@@ -20,11 +21,12 @@ export default class UI
   isPinching;
   startBoard;
 
-  constructor(board, canvas, client)
+  constructor(board, canvasSetup, client)
   {
     this.client = client;
     this.board = board;
-    this.canvas = canvas;
+    this.canvasSetup = canvasSetup;
+    this.canvas = canvasSetup.canvas;
 
     this.dimensionSlider = document.getElementById("dimensionRange");
     this.zoomSlider = document.getElementById("zoomRange");
@@ -128,7 +130,7 @@ export default class UI
     let center = new Position(this.canvas.width/2, this.canvas.height/2);
     let boardSize = this.board.size;
     let deltaSize = this.board.size;
-    
+
     boardSize += amount*this.board.size/10;
     this.board.resize(boardSize);
 
