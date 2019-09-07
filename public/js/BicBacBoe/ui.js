@@ -77,6 +77,7 @@ export default class UI
     this.resetBttn.addEventListener('click', () => {
       this.resizeBoard(this.calcBoardSize());
       this.board.reset();
+      this.update();
     });
     this.downloadBttn.addEventListener('click', () => this.downloadBoard());
   }
