@@ -1,8 +1,10 @@
+import io from 'socket.io-client'
+
 export default class Client
 {
   socket;
 
-  constructor(io)
+  constructor()
   {
     this.socket = io.connect();
 

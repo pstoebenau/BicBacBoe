@@ -26,6 +26,7 @@ export default class Position
 
   distance(pos)
   {
+    console.log(pos);
     let distance = Math.pow(this.x-pos.x, 2);
     distance += Math.pow(this.y-pos.y, 2);
     distance = Math.sqrt(distance, 2);

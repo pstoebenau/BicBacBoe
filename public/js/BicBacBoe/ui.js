@@ -7,13 +7,16 @@ export default class UI
   canvasSetup;
   board;
   playerMark = 0;
-  // Buttons & sliders
+
+  // Buttons and Sliders
   dimensionSlider;
   zoomSlider;
   opponentID;
-  fullscrnBttn;
+  fullScrnBttn;
   resetBttn;
   saveBttn;
+  downloadBttn;
+
   // Mouse
   mouse;
   startMousePos;
@@ -21,25 +24,36 @@ export default class UI
   isPinching;
   startBoard;
 
-  constructor(board, canvasSetup, client)
+  constructor(board, canvasSetup, client, update)
   {
     this.client = client;
     this.board = board;
     this.canvasSetup = canvasSetup;
     this.canvas = canvasSetup.canvas;
+    this.update = update;
 
+    // Buttons and Sliders
     this.dimensionSlider = document.getElementById("dimensionRange");
     this.zoomSlider = document.getElementById("zoomRange");
     this.opponentID = document.getElementById("opponentID");
     this.fullScrnBttn = document.getElementById("fullScrnBttn");
     this.resetBttn = document.getElementById("resetBttn");
     this.saveBttn = document.getElementById("saveBttn");
+    this.downloadBttn = document.getElementById("downloadBttn");
 
+    // Mouse
     this.mouse = {position: new Position(0,0), isDown: false, isDragging: false};
     this.startMousePos = new Position(0,0);
     this.startTouchDistance = 0;
     this.isPinching = false;
     this.startBoard = new Position(0,0);
+
+    this.setUpControls();
+  }
+
+  setUpControls() {
+    // Resize Board
+    window.addEventListener("resize", () => this.resizeBoard(this.calcBoardSize()));
 
     // Mouse and touch controls
     // Mouse
@@ -58,13 +72,13 @@ export default class UI
 
     // Board Controls
     this.dimensionSlider.addEventListener("input", () => this.changeDim());
-    this.opponentID.addEventListener("input", () => this.client.pickOpponent(opponentID.value));
-    window.addEventListener("resize", () => this.resizeBoard(this.calcBoardSize()));
+    this.opponentID.addEventListener("input", () => this.client.pickOpponent(this.opponentID.value));
     this.fullScrnBttn.addEventListener('click', () => this.psuedoFullscreen());
     this.resetBttn.addEventListener('click', () => {
       this.resizeBoard(this.calcBoardSize());
       this.board.reset();
     });
+    this.downloadBttn.addEventListener('click', () => this.downloadBoard());
   }
 
   toggleFullScreen()
@@ -79,6 +93,8 @@ export default class UI
       requestFullScreen.call(docEl);
     else
       cancelFullScreen.call(doc);
+
+    this.update();
   }
 
   psuedoFullscreen()
@@ -117,11 +133,17 @@ export default class UI
     // Resize board according to zoom and screen size
     this.board.resize(size);
     this.board.move(new Position(this.canvas.width/2, this.canvas.height/2));
+    this.update();
+  }
+
+  downloadBoard(){
+
   }
 
   changeDim()
   {
     this.board.changeDim(this.dimensionSlider.value);
+    this.update();
   }
 
   zoom(amount)
@@ -142,6 +164,8 @@ export default class UI
     movPos = movPos.add(this.board.position);
     movPos = movPos.subtract(center);
     this.board.move(this.board.position.subtract(movPos));
+
+    this.update();
   }
 
   startTouch()
@@ -153,7 +177,7 @@ export default class UI
     if(event.touches.length >= 2)
     {
       let secondTouch = new Position(event.touches[1].pageX, event.touches[1].pageY);
-      this.startTouchDistance = touch.distance(this.secondTouch);
+      this.startTouchDistance = touch.distance(secondTouch);
     }
 
     if(this.isPinching)
@@ -173,7 +197,7 @@ export default class UI
       // Scale Board
       let secondTouch = new Position(event.touches[1].pageX, event.touches[1].pageY);
       let touchDistance = touch.distance(secondTouch);
-      let delta = touchDistance-startTouchDistance;
+      let delta = touchDistance-this.startTouchDistance;
       this.zoom(delta/10);
 
       // Calculate for next move
@@ -197,7 +221,7 @@ export default class UI
     {
       this.mouse.isDown = false;
 
-      if(mouse.isDragging)
+      if(this.mouse.isDragging)
       {
         this.mouse.isDragging = false;
         return;
@@ -243,6 +267,8 @@ export default class UI
 
       this.board.move(newPos);
     }
+
+    this.update();
   }
 
   // Update board on mouse release
@@ -268,5 +294,7 @@ export default class UI
 
     if(this.board.createMove(this.mouse.position))
       this.client.sendBoardData(this.board.getBoardData());
+
+    this.update();
   }
 }

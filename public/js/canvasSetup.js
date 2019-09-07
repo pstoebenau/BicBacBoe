@@ -9,9 +9,9 @@ export default class CanvasSetup
   frameRate;
   update;
 
-  constructor(update)
+  constructor(containerId, update)
   {
-    this.container = document.getElementById("BicBacBoe");
+    this.container = document.getElementById(containerId);
     this.canvas = document.querySelector('canvas');
     this.ctx = this.canvas.getContext("2d");
 
@@ -38,6 +38,9 @@ export default class CanvasSetup
   // Call update function at constant frame rate
   setFrameRate()
   {
+    if (!this.update)
+      return;
+
     // Game loop
     requestAnimationFrame(() => this.setFrameRate());
 

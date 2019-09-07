@@ -4,10 +4,10 @@ import Board from './board.js';
 import Position from '../misc/position.js';
 import Client from "./client.js";
 
-const canvasSetup = new CanvasSetup(update);
+const canvasSetup = new CanvasSetup("BicBacBoe");
 const board = createBoard(1);
-const client = new Client(io);
-const ui = new UI(board, canvasSetup, client);
+const client = new Client();
+const ui = new UI(board, canvasSetup, client, update);
 
 var boardSize = calcBoardSize();
 
@@ -52,8 +52,11 @@ function update()
 client.socket.on('updateBoard', (data) => {
   ui.dimensionSlider.value = data.dimensions;
   board.loadBoard(data);
+  update();
 });
 
 client.socket.on('updatePlayerMark', (mark) => {
   ui.playerMark = mark;
 });
+
+update();
