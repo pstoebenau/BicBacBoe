@@ -1,5 +1,5 @@
 import UI from "./ui.js";
-import CanvasSetup from "../canvasSetup.js";
+import CanvasSetup from "../misc/canvasSetup.js";
 import Board from './board.js';
 import Position from '../misc/position.js';
 import Client from "./client.js";
@@ -50,7 +50,6 @@ function update() {
 }
 
 client.socket.on('updateBoard', (data) => {
-  console.log("wow");
   ui.dimensionSlider.value = data.dimensions;
   board.loadBoard(data);
   update();

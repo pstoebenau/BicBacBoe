@@ -45,8 +45,10 @@ export default class UI
     this.saveBttn = document.getElementById("saveBttn");
     this.downloadBttn = document.getElementById("downloadBttn");
 
-    // Text inputs
+    // Inputs
     this.opponentText = document.getElementById("opponentText");
+    this.opponentButton = document.getElementById("confirmButton");
+
 
     // Mouse
     this.mouse = {position: new Position(0,0), isDown: false, isDragging: false};
@@ -79,7 +81,7 @@ export default class UI
 
     // Multiplayer Controls
     this.multiplayerButton.addEventListener('click', () => this.showMultiplayerPane());
-    this.opponentText.addEventListener('input', () => client.setOpponent(this.opponentText.value));
+    this.opponentButton.addEventListener('click', () => client.setOpponent(this.opponentText.value));
 
     // Board Controls
     this.dimensionSlider.addEventListener("input", () => this.changeDim());
@@ -301,7 +303,7 @@ export default class UI
     }
     this.mouse.isDragging = false;
 
-    if(this.opponentText) {
+    if(this.client.isMultiplayer()) {
       if(this.board.turn == 0)
         this.client.setPlayerMark(this.board.turn);
 

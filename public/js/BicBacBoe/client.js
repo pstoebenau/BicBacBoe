@@ -4,16 +4,19 @@ export default class Client {
   socket;
   playerID;
   playerList;
+  opponentName = "N/A";
+  isConnected = false;
 
   constructor() {
     this.socket = io.connect();
 
-    this.socket.on('socketID', (id) => {
-      this.playerID = id;
-    });
+    this.socket.on('socketID', (id) => this.playerID = id);
 
-    this.socket.on('playerList', (playerList) => {
-      this.playerList = playerList;
+    this.socket.on('playerList', (playerList) => this.playerList = playerList);
+
+    this.socket.on('connectionDetails', (data) => {
+      this.isConnected = data.isConnected;
+      this.opponentName = data.opponentName;
     });
   }
 
@@ -23,6 +26,10 @@ export default class Client {
 
   getPlayerList() {
     return this.playerList;
+  }
+
+  isMultiplayer() {
+    return this.isConnected;
   }
 
   setUsername(username) {

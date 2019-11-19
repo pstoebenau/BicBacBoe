@@ -34,6 +34,12 @@ td {
 button {
   border: none;
   outline: none;
+  border-radius: 5px;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 
 button:active {
@@ -108,7 +114,6 @@ textarea {
   top: auto;
   padding-top: 15px;
   padding-left: 15px;
-  width: 20%;
 }
 
 #sideBar button {
@@ -131,6 +136,15 @@ textarea {
   background-color: #222;
 }
 
+#opponentInput {
+  display: flex;
+  width: 250px;
+}
+
+#confirmButton {
+  margin-left: 5px;
+}
+
 #topBar {
   position: absolute;
   left: 50%;
@@ -139,6 +153,11 @@ textarea {
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  user-select: none;
+  -moz-user-select: none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -o-user-select: none;
 }
 
 #controls {

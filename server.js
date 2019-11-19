@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   res.redirect("/BicBacBoe.html");
 });
 
-serv.listen(port, () => {
+serv.listen(port, '10.40.9.184', () => {
   console.log("app running");
 });
 
@@ -45,6 +45,14 @@ io.sockets.on('connection', (socket) =>{
     SOCKET_LIST.splice(socket.id, 1);
     PLAYER_LIST.splice(socket.id, 1);
     updatePlayerList();
+
+    if (player.opponentID >= 0) {
+      let opponentSocket = getSocketFromID(player.opponentID);
+      if (opponentSocket != null)
+        opponentSocket.emit('connectionDetails', {isConnected: false, opponentName: "N/A"});
+    }
+
+    socket.emit('connectionDetails', {isConnected: false, opponentName: "N/A"});
   });
 
   socket.on('updateOpponent', (username) => {
@@ -55,8 +63,23 @@ io.sockets.on('connection', (socket) =>{
       return;
     }
 
+    // Notify previous opponent of change
+    if (player.opponentID >= 0 && player.opponentID != opponentID) {
+      let opponentSocket = getSocketFromID(player.opponentID)
+
+      if (opponentSocket != null)
+        opponentSocket.emit('connectionDetails', {isConnected: false, opponentName: "N/A"});
+    }
+
     player.opponentID = opponentID;
     updatePlayerList();
+
+    // Notify clients of connection to opponent
+    let opponent = getPlayerFromID(opponentID);
+    if (opponent.opponentID === player.id){
+      getSocketFromID(opponentID).emit('connectionDetails', {isConnected: true, opponentName: player.username});
+      socket.emit('connectionDetails', {isConnected: true, opponentName: opponent.username});
+    }
   });
 
   socket.on('updateUsername', (username) => {
@@ -65,20 +88,23 @@ io.sockets.on('connection', (socket) =>{
   })
 
   socket.on('setPlayerMark', (mark) => {
-    if(!PLAYER_LIST[player.opponentID])
+    let opponent = getPlayerFromID(player.opponentID);
+
+    if(!opponent)
     {
       console.error("No oppenent specified");
       return;
     }
 
-    updatePlayerMarkers(player, PLAYER_LIST[player.opponentID], mark);
+    updatePlayerMarkers(player, opponent, mark);
     updatePlayerList();
   });
 
   socket.on('update', (data) => {
+    let opponent = getPlayerFromID(player.opponentID);
     player.boardData = data;
 
-    if(player.opponentID && PLAYER_LIST[player.opponentID] && PLAYER_LIST[player.opponentID].opponentID == player.id)
+    if(player.opponentID >= 0 && opponent != null && opponent.opponentID == player.id)
       update(player, player.opponentID);
   });
 });
@@ -118,6 +144,14 @@ function getSocketFromID(id) {
   for (let socket of SOCKET_LIST)
     if (socket.id === id)
       return socket;
+
+  return null;
+}
+
+function getPlayerFromID(id) {
+  for (let player of PLAYER_LIST)
+    if (player.id === id)
+      return player;
 
   return null;
 }
