@@ -13,7 +13,7 @@ app.get("/", (req, res) => {
   res.redirect("/BicBacBoe.html");
 });
 
-serv.listen(port, '10.40.9.184', () => {
+serv.listen(port, () => {
   console.log("app running");
 });
 
