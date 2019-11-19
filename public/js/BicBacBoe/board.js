@@ -11,6 +11,7 @@ export default class Board {
   grids;
   canvas;
   ctx;
+  ui;
 
   constructor(x, y, size, dimen, canvas) {
     this.canvas = canvas;
@@ -135,7 +136,7 @@ export default class Board {
     if (grid.parent == null) {
       if (win) {
         grid.close();
-        this.winner = this.turn % 2 + 1;
+        this.ui.win(this.turn % 2);
       }
       return;
     }

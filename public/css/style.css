@@ -1,11 +1,12 @@
-html, body{
+html, body {
   height: 100%;
   width: 100%;
+  overflow: hidden;
   margin: 0;
   padding: 0;
 }
 
-body{
+body {
   position: fixed;
   font-family: "Comic Sans MS", "Comic Sans";
   font-size: 15px;
@@ -15,53 +16,39 @@ body{
 }
 
 /*Global*/
-canvas{
+canvas {
   position: absolute;
   margin: 0;
   background-color: #353535;
 }
 
-button:active{
+table, th, td {
+  border: 2px solid #eee;
+  border-collapse: collapse;
+}
+
+td {
+  text-align: center;
+}
+
+button {
+  border: none;
+  outline: none;
+}
+
+button:active {
   transform: scale(.8);
 }
 
-.container{
+.container {
   width: 80%;
   margin: auto;
   overflow: hidden;
 }
 
-ul{
+ul {
   margin: 0;
   padding: 0;
-}
-
-.button_1{
-  height: 35px;
-  background: #696969;
-  border: 0;
-  padding-left: 20px;
-  padding-right: 20px;
-  color: #ffffff;
-}
-
-.sideBar{
-  position: absolute;
-  top: auto;
-  padding-left: 15px;
-  width: 20%;
-}
-
-.sideBar input{
-  width: 100%;
-}
-
-.sideBar #opponentID{
-  width: 40px;
-}
-
-.sideBar h3{
-  width: 100%;
 }
 
 input[type=number]::-webkit-inner-spin-button,
@@ -89,59 +76,6 @@ textarea {
   font-size: 16px;
 }
 
-/*Header*/
-header{
-  position: sticky;
-  padding: 30px 0 30px 0;
-  background: #404040;
-  border-bottom: #f4f4f4 3px solid;
-  top: 0;
-  color: #f4f4f4;
-}
-
-header a{
-  color: #ffffff;
-  text-decoration: none;
-  text-transform: uppercase;
-  font-size: 14px;
-}
-
-header li{
-  float: left;
-  display: inline;
-  padding: 0 20px 0 20px;
-}
-
-header #branding{
-  float: left;
-}
-
-header #branding img{
-  float: left;
-  width: 50px;
-  margin-right: 20px;
-}
-
-header #branding h1{
-  float: right;
-  margin: 0;
-}
-
-header nav{
-  float: right;
-  margin-top: 10px;
-}
-
-header .highlight, header .current a{
-  color: #ba0000;
-  font-weight: bold;
-}
-
-header a:hover{
-  color: #cccccc;
-  font-weight: bold;
-}
-
 .slider {
   -webkit-appearance: none;
   width: 100%;
@@ -163,140 +97,41 @@ header a:hover{
   cursor: pointer;
 }
 
-.numInput{
-  width: 25px;
-  height: 20px;
-  border: none;
-  border-radius:10px;
-  outline: none;
-}
-
-#showcase{
-  min-height: 500px;
-  background: url("../img/Railroad.jpg") no-repeat;
-  background-size: cover;
-  background-position: center center;
-  text-align: center;
-}
-
-#showcase h1{
-  margin-top: 100px;
-  font-size: 55px;
-  margin-bottom: 10px;
-}
-
-#showcase p{
-  font-size: 20px;
-}
-
-#FatStacks{
-  padding: 15px;
-  color: #ffffff;
-  background: #696969;
-}
-
-#FatStacks h1{
-  float: left;
-}
-
-#FatStacks form{
-  margin-top: 15px;
-  float: right;
-}
-
-#FatStacks input[type="text"]{
-  padding: 5px;
-  height: 20px;
-  width: 250px;
-}
-
-#FatStacks button{
-  border-radius: 5px;
-  transition-duration: .4s;
-  background-color: white;
-  color: black;
-  border: 2px solid #4CAF50;
-}
-
-#FatStacks button:hover{
-  background-color: #4CAF50;
-  color: white;
-}
-
-#FatStacks button:active{
-  border-color: #696969;
-  background-color: #696969;
-  transition-duration: .1s;
-  color: white;
-}
-
-#boxes{
-  margin-top: 20px;
-}
-
-#boxes .box {
-  float: left;
-  text-align: center;
-  width: 30%;
-  padding: 10px;
-}
-
-#boxes .box img{
-  width: 65%;
-}
-
-#calculator{
-  margin: 20px auto;
-  height: 500px;
-  width: 400px;
-  border: 5px solid #000;
-}
-
-#answer{
-  background: #c4c4c4;
-  height: 20%;
-}
-
-#answer .container{
-  float: left;
-  height: 100%;
-  width: 75%;
-}
-
-#answer h3{
-  font-size: 30px;
-  margin-top: 10%;
-  text-align: center;
-}
-
-#answer button{
-  float: right;
-  height: 100% !important;
-  width: 25% !important;
-}
-
-#calculator button{
-  margin: 0;
-  padding: 0;
-  height: 25%;
-  width: 100%;
-  font-size: 25px;
-}
-
-#calculator .col{
-  float: left;
-  height: 80%;
-  width: 25%;
-  background: #999;
-}
-
 #backCanvas {
   top: 0;
   left: 0;
   z-index: -1;
 }
 
-#topBar{
+#sideBar {
+  position: absolute;
+  top: auto;
+  padding-top: 15px;
+  padding-left: 15px;
+  width: 20%;
+}
+
+#sideBar button {
+  height: 30px;
+  width: 100px;
+  background-color: #3e8c35;
+  font-size: 16px;
+  color: silver;
+}
+
+#multiplayerPane {
+  display: none;
+  margin-top: 10px;
+  max-height: 500px;
+  overflow: auto;
+}
+
+#playerTable {
+  width: 250px;
+  background-color: #222;
+}
+
+#topBar {
   position: absolute;
   left: 50%;
   transform: translate(-50%, 0);
@@ -306,16 +141,14 @@ header a:hover{
   justify-content: center;
 }
 
-#controls{
+#controls {
   display: flex;
   flex-direction: column;
   position: absolute;
   right: 10px;
 }
 
-#controls button{
+#controls button {
   background-color: transparent;
-  border: none;
-  outline: none;
   margin-top: 15px;
 }

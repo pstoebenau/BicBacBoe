@@ -7,32 +7,23 @@
     <link rel="stylesheet" href="./css/style.css">
   </head>
   <body style="display:flex; flex-direction:column">
-    <header id="menuBar">
-      <div id="background"></div>
-      <div class="container">
-        <div id="branding">
-          <img src="./img/button.png">
-          <h1><span class="highlight">Website</span></h1>
-        </div>
-        <nav>
-          <ul>
-            <li><a href="index.html">Home</a></li>
-            <li><a href="about.html">About</a></li>
-            <li><a href="lab.html">Lab</a></li>
-            <li><a href="canvas.html">Canvas</a></li>
-            <li class="current"><a href="BicBacBoe.html">BicBacBoe</a></li>
-          </ul>
-        </nav>
-      </div>
-    </header>
-
     <div id="BicBacBoe" style="flex:1">
       <canvas></canvas>
 
-      <div class="sideBar">
-        <h3 id="clientID">Client ID: null</h3>
-        <h3>Enter opponent ID</h3>
-        <input type="number" min="0" max="99999" class="numInput" id="opponentID">
+      <div id="sideBar">
+        <button id="multiplayerButton" type="button" name="multiplayerButton">Multiplayer</button>
+
+        <div id="multiplayerPane">
+          <table id="playerTable">
+            <tr>
+              <th>Player</th>
+              <th>Username</th>
+            </tr>
+          </table>
+
+          <p>Choose opponent</p>
+          <input id="opponentText" type="text" name="opponentText">
+        </div>
       </div>
 
       <div id="topBar">

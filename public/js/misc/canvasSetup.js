@@ -25,7 +25,9 @@ export default class CanvasSetup
     window.addEventListener("resize", () => this.resizeCanvas());
 
     this.resizeCanvas();
-    this.setFrameRate();
+
+    if(update)
+      this.setFrameRate();
   }
 
   resizeCanvas()

@@ -9,13 +9,16 @@ export default class UI
   playerMark = 0;
 
   // Buttons and Sliders
+  multiplayerButton;
   dimensionSlider;
   zoomSlider;
-  opponentID;
   fullScrnBttn;
   resetBttn;
   saveBttn;
   downloadBttn;
+
+  // Text inputs
+  opponentText;
 
   // Mouse
   mouse;
@@ -24,8 +27,7 @@ export default class UI
   isPinching;
   startBoard;
 
-  constructor(board, canvasSetup, client, update)
-  {
+  constructor(board, canvasSetup, client, update) {
     this.client = client;
     this.board = board;
     this.canvasSetup = canvasSetup;
@@ -33,6 +35,8 @@ export default class UI
     this.update = update;
 
     // Buttons and Sliders
+    this.multiplayerButton = document.getElementById("multiplayerButton");
+    this.multiplayerPane = document.getElementById("multiplayerPane");
     this.dimensionSlider = document.getElementById("dimensionRange");
     this.zoomSlider = document.getElementById("zoomRange");
     this.opponentID = document.getElementById("opponentID");
@@ -40,6 +44,9 @@ export default class UI
     this.resetBttn = document.getElementById("resetBttn");
     this.saveBttn = document.getElementById("saveBttn");
     this.downloadBttn = document.getElementById("downloadBttn");
+
+    // Text inputs
+    this.opponentText = document.getElementById("opponentText");
 
     // Mouse
     this.mouse = {position: new Position(0,0), isDown: false, isDragging: false};
@@ -70,9 +77,12 @@ export default class UI
     this.canvas.addEventListener("touchend", () => this.stopTouch(), false);
     this.canvas.addEventListener("touchcancel", () => this.stopTouch(), false);
 
+    // Multiplayer Controls
+    this.multiplayerButton.addEventListener('click', () => this.showMultiplayerPane());
+    this.opponentText.addEventListener('input', () => client.setOpponent(this.opponentText.value));
+
     // Board Controls
     this.dimensionSlider.addEventListener("input", () => this.changeDim());
-    this.opponentID.addEventListener("input", () => this.client.pickOpponent(this.opponentID.value));
     this.fullScrnBttn.addEventListener('click', () => this.psuedoFullscreen());
     this.resetBttn.addEventListener('click', () => {
       this.resizeBoard(this.calcBoardSize());
@@ -82,8 +92,25 @@ export default class UI
     this.downloadBttn.addEventListener('click', () => this.downloadBoard());
   }
 
-  toggleFullScreen()
-  {
+  updatePlayerTable() {
+    let playerTable = document.getElementById('playerTable');
+
+    for (let i = playerTable.rows.length - 1; i >= 1; i--)
+    playerTable.deleteRow(i);
+
+    for (let player of this.client.getPlayerList()) {
+      let row = playerTable.insertRow(playerTable.rows.length);
+
+      row.insertCell(0).innerHTML = `${player.id}`;
+      row.insertCell(1).innerHTML = player.username;
+
+      if (player.id === this.client.getPlayerID())
+      row.style.color = "green";
+
+    }
+  }
+
+  toggleFullScreen() {
     var doc = window.document;
     var docEl = bicBacBoe;
 
@@ -98,12 +125,10 @@ export default class UI
     this.update();
   }
 
-  psuedoFullscreen()
-  {
+  psuedoFullscreen() {
     let menuBar = document.getElementById("menuBar");
 
-    if(menuBar.style.display == "none")
-    {
+    if(menuBar.style.display == "none") {
       window.scrollTo(1, 0);
       menuBar.style.display = "block";
     }
@@ -117,8 +142,16 @@ export default class UI
     this.resizeBoard(this.calcBoardSize());
   }
 
-  calcBoardSize()
-  {
+  showMultiplayerPane() {
+    if(this.multiplayerPane.style.display === "block")
+      this.multiplayerPane.style.display = "none";
+    else {
+      this.multiplayerPane.style.display = "block";
+      this.updatePlayerTable();
+    }
+  }
+
+  calcBoardSize() {
     let size;
 
     if(this.canvas.width < this.canvas.height)
@@ -129,26 +162,23 @@ export default class UI
     return size;
   }
 
-  resizeBoard(size)
-  {
+  resizeBoard(size) {
     // Resize board according to zoom and screen size
     this.board.resize(size);
     this.board.move(new Position(this.canvas.width/2, this.canvas.height/2));
     this.update();
   }
 
-  downloadBoard(){
+  downloadBoard() {
 
   }
 
-  changeDim()
-  {
+  changeDim() {
     this.board.changeDim(this.dimensionSlider.value);
     this.update();
   }
 
-  zoom(amount)
-  {
+  zoom(amount) {
     let movPos;
     let center = new Position(this.canvas.width/2, this.canvas.height/2);
     let boardSize = this.board.size;
@@ -169,14 +199,12 @@ export default class UI
     this.update();
   }
 
-  startTouch()
-  {
+  startTouch() {
     event.preventDefault();
 
     let touch = new Position(event.touches[0].pageX, event.touches[0].pageY);
 
-    if(event.touches.length >= 2)
-    {
+    if(event.touches.length >= 2) {
       let secondTouch = new Position(event.touches[1].pageX, event.touches[1].pageY);
       this.startTouchDistance = touch.distance(secondTouch);
     }
@@ -187,14 +215,12 @@ export default class UI
     this.startSelect(touch.x, touch.y);
   }
 
-  moveTouch()
-  {
+  moveTouch() {
     let touch = new Position(event.touches[0].pageX, event.touches[0].pageY);
 
     event.preventDefault();
 
-    if(event.touches.length >= 2)
-    {
+    if(event.touches.length >= 2) {
       // Scale Board
       let secondTouch = new Position(event.touches[1].pageX, event.touches[1].pageY);
       let touchDistance = touch.distance(secondTouch);
@@ -216,14 +242,11 @@ export default class UI
     this.updateMousePos(touch.x, touch.y)
   }
 
-  stopTouch()
-  {
-    if(event.touches.length <= 0 && this.isPinching)
-    {
+  stopTouch() {
+    if(event.touches.length <= 0 && this.isPinching) {
       this.mouse.isDown = false;
 
-      if(this.mouse.isDragging)
-      {
+      if(this.mouse.isDragging) {
         this.mouse.isDragging = false;
         return;
       }
@@ -238,13 +261,11 @@ export default class UI
     this.stopSelect();
   }
 
-  startSelect(mouseX, mouseY)
-  {
+  startSelect(mouseX, mouseY) {
     this.mouse.position.x = mouseX - this.canvas.getBoundingClientRect().left;
     this.mouse.position.y = mouseY - this.canvas.getBoundingClientRect().top;
 
-    if(!this.mouse.isDragging)
-    {
+    if(!this.mouse.isDragging) {
       this.startBoard = this.board.position;
       this.startMousePos = this.mouse.position.copy();
     }
@@ -253,8 +274,7 @@ export default class UI
   }
 
   // Update mouse variable
-  updateMousePos(mouseX, mouseY)
-  {
+  updateMousePos(mouseX, mouseY) {
     this.mouse.position.x = mouseX - this.canvas.getBoundingClientRect().left;
     this.mouse.position.y = mouseY - this.canvas.getBoundingClientRect().top;
 
@@ -262,8 +282,7 @@ export default class UI
       this.mouse.isDragging = true;
 
     // Moves board when dragging
-    if(this.mouse.isDragging)
-    {
+    if(this.mouse.isDragging) {
       let newPos = this.startBoard.add(this.mouse.position.subtract(this.startMousePos));
 
       this.board.move(newPos);
@@ -273,19 +292,16 @@ export default class UI
   }
 
   // Update board on mouse release
-  stopSelect()
-  {
+  stopSelect() {
     this.mouse.isDown = false;
 
-    if(this.mouse.isDragging)
-    {
+    if(this.mouse.isDragging) {
       this.mouse.isDragging = false;
       return;
     }
     this.mouse.isDragging = false;
 
-    if(this.opponentID.value)
-    {
+    if(this.opponentText) {
       if(this.board.turn == 0)
         this.client.setPlayerMark(this.board.turn);
 
@@ -297,5 +313,9 @@ export default class UI
       this.client.sendBoardData(this.board.getBoardData());
 
     this.update();
+  }
+
+  win(winner) {
+    alert(`Player ${winner} wins!`)
   }
 }

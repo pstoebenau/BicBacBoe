@@ -9,6 +9,7 @@ module.exports = {
     publicPath: '/public'
   },
   devtool: 'source-map',
+  watch: true,
   module: {
     rules: [{
       test: /\.js?$/,
