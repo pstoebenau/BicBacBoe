@@ -103,7 +103,8 @@ io.sockets.on('connection', (socket) =>{
   socket.on('win', () => {
     let opponent = getSocketFromID(player.opponentID);
 
-    opponent.emit('lose');
+    if (opponent != null)
+      opponent.emit('lose');
   });
 
   socket.on('update', (data) => {
