@@ -110,6 +110,17 @@ export default class UI
     this.downloadBttn.addEventListener('click', () => this.downloadBoard());
   }
 
+  unlockAudio() {
+    let soundEffects = [this.bruhAudio, this.reallyNiggaAudio, this.airHornAudio, this.allahuAkbharAudio, this.ninjaAudio, this.sadViolinAudio];
+
+    for (let audio of soundEffects) {
+      audio.load();
+      audio.play();
+      audio.pause();
+      audio.currentTime = 0;
+    }
+  }
+
   playAudio(audioName) {
     let soundEffects = [
       ["bruh", "really nigga", "air horn", "allahu akbar", "ninja", "sad violin"],
@@ -187,7 +198,7 @@ export default class UI
   }
 
   downloadBoard() {
-    
+
   }
 
   changeDim() {
@@ -230,6 +241,7 @@ export default class UI
       return;
 
     this.startSelect(touch.x, touch.y);
+    this.unlockAudio();
   }
 
   moveTouch() {
@@ -336,7 +348,7 @@ export default class UI
 
   lose() {
     this.playAudio("really nigga");
-    setTimeout(() => this.playAudio("sad violin"), 1000);
+    setTimeout(() => this.playAudio("sad violin"), 1200);
   }
 
   win(winner) {
