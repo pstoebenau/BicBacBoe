@@ -141,7 +141,6 @@ export default class UI
 
       if (player.id === this.client.getPlayerID())
       row.style.color = "green";
-
     }
   }
 

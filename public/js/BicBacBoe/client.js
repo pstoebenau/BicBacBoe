@@ -13,7 +13,10 @@ export default class Client {
 
     this.socket.on('socketID', (id) => this.playerID = id);
 
-    this.socket.on('playerList', (playerList) => this.playerList = playerList);
+    this.socket.on('playerList', (playerList) => {
+      this.playerList = playerList;
+      this.ui.updatePlayerTable();
+    });
 
     this.socket.on('connectionDetails', (data) => {
       this.isConnected = data.isConnected;
