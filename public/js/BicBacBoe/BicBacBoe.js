@@ -9,6 +9,7 @@ const board = createBoard();
 const client = new Client();
 const ui = new UI(board, canvasSetup, client, update);
 board.ui = ui;
+client.ui = ui;
 
 var boardSize = calcBoardSize();
 
@@ -51,6 +52,7 @@ function update() {
 
 client.socket.on('updateBoard', (data) => {
   ui.dimensionSlider.value = data.dimensions;
+  ui.playAudio("bruh");
   board.loadBoard(data);
   update();
 });

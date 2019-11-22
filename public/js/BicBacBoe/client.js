@@ -1,6 +1,7 @@
 import io from 'socket.io-client'
 
 export default class Client {
+  ui;
   socket;
   playerID;
   playerList;
@@ -18,6 +19,8 @@ export default class Client {
       this.isConnected = data.isConnected;
       this.opponentName = data.opponentName;
     });
+
+    this.socket.on('lose', () => this.ui.lose());
   }
 
   getPlayerID() {
@@ -50,5 +53,9 @@ export default class Client {
 
   setPlayerMark(mark) {
     this.socket.emit('setPlayerMark', mark);
+  }
+
+  win() {
+    this.socket.emit('win');
   }
 }

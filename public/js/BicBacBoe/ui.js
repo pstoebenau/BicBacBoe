@@ -8,6 +8,11 @@ export default class UI
   board;
   playerMark = 0;
 
+  // Audio
+  bruhAudio;
+  reallyNibbaAudio;
+  airHornAudio;
+
   // Buttons and Sliders
   multiplayerButton;
   dimensionSlider;
@@ -34,6 +39,14 @@ export default class UI
     this.canvas = canvasSetup.canvas;
     this.update = update;
 
+    // Audio
+    this.bruhAudio = new Audio('../../audio/bruh.mp3');
+    this.reallyNiggaAudio = new Audio('../../audio/really_nigga.mp3');
+    this.airHornAudio = new Audio('../../audio/air_horn.mp3');
+    this.allahuAkbharAudio = new Audio('../../audio/allahu_akbar.mp3');
+    this.ninjaAudio = new Audio('../../audio/ninja.mp3');
+    this.sadViolinAudio = new Audio('../../audio/sad_violin.mp3');
+
     // Buttons and Sliders
     this.multiplayerButton = document.getElementById("multiplayerButton");
     this.multiplayerPane = document.getElementById("multiplayerPane");
@@ -47,7 +60,9 @@ export default class UI
 
     // Inputs
     this.opponentText = document.getElementById("opponentText");
-    this.opponentButton = document.getElementById("confirmButton");
+    this.opponentButton = document.getElementById("opponentButton");
+    this.usernameText = document.getElementById("usernameText");
+    this.usernameButton = document.getElementById("usernameButton");
 
 
     // Mouse
@@ -82,16 +97,34 @@ export default class UI
     // Multiplayer Controls
     this.multiplayerButton.addEventListener('click', () => this.showMultiplayerPane());
     this.opponentButton.addEventListener('click', () => client.setOpponent(this.opponentText.value));
+    this.usernameButton.addEventListener('click', () => client.setUsername(this.usernameText.value));
 
     // Board Controls
     this.dimensionSlider.addEventListener("input", () => this.changeDim());
-    this.fullScrnBttn.addEventListener('click', () => this.psuedoFullscreen());
+    this.fullScrnBttn.addEventListener('click', () => this.toggleFullScreen());
     this.resetBttn.addEventListener('click', () => {
       this.resizeBoard(this.calcBoardSize());
       this.board.reset();
       this.update();
     });
     this.downloadBttn.addEventListener('click', () => this.downloadBoard());
+  }
+
+  playAudio(audioName) {
+    let soundEffects = [
+      ["bruh", "really nigga", "air horn", "allahu akbar", "ninja", "sad violin"],
+      [this.bruhAudio, this.reallyNiggaAudio, this.airHornAudio, this.allahuAkbharAudio, this.ninjaAudio, this.sadViolinAudio]
+    ]
+
+    for (let i = 0; i < soundEffects[0].length; i++){
+      if (audioName === soundEffects[0][i]) {
+        soundEffects[1][i].load();
+        soundEffects[1][i].play();
+        return;
+      }
+    }
+
+    console.error("Sound Effect does not exist");
   }
 
   updatePlayerTable() {
@@ -114,10 +147,10 @@ export default class UI
 
   toggleFullScreen() {
     var doc = window.document;
-    var docEl = bicBacBoe;
+    var docEl = document;
 
-    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen || psuedoFullscreen;
-    var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen || psuedoFullscreen;
+    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
+    var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
 
     if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement)
       requestFullScreen.call(docEl);
@@ -125,23 +158,6 @@ export default class UI
       cancelFullScreen.call(doc);
 
     this.update();
-  }
-
-  psuedoFullscreen() {
-    let menuBar = document.getElementById("menuBar");
-
-    if(menuBar.style.display == "none") {
-      window.scrollTo(1, 0);
-      menuBar.style.display = "block";
-    }
-    else
-    {
-      window.scrollTo(0, 1);
-      menuBar.style.display = "none";
-    }
-
-    this.canvasSetup.resizeCanvas();
-    this.resizeBoard(this.calcBoardSize());
   }
 
   showMultiplayerPane() {
@@ -311,13 +327,21 @@ export default class UI
         return;
     }
 
-    if(this.board.createMove(this.mouse.position))
+    if(this.board.createMove(this.mouse.position)) {
+      this.playAudio("bruh");
       this.client.sendBoardData(this.board.getBoardData());
+    }
 
     this.update();
   }
 
+  lose() {
+    this.playAudio("really nigga");
+    setTimeout(() => this.playAudio("sad violin"), 1000);
+  }
+
   win(winner) {
-    alert(`Player ${winner} wins!`)
+    this.playAudio("air horn");
+    client.win();
   }
 }
