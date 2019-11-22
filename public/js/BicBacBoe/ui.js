@@ -187,7 +187,7 @@ export default class UI
   }
 
   downloadBoard() {
-
+    
   }
 
   changeDim() {
