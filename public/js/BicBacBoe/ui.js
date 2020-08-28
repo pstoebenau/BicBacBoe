@@ -347,8 +347,7 @@ export default class UI
   }
 
   lose() {
-    this.playAudio("really nigga");
-    setTimeout(() => this.playAudio("sad violin"), 1200);
+    this.playAudio("sad violin");
   }
 
   win(winner) {
