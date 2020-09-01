@@ -41,9 +41,7 @@ export default class UI
 
     // Audio
     this.bruhAudio = new Audio('../../audio/bruh.mp3');
-    this.reallyNiggaAudio = new Audio('../../audio/really_nigga.mp3');
     this.airHornAudio = new Audio('../../audio/air_horn.mp3');
-    this.allahuAkbharAudio = new Audio('../../audio/allahu_akbar.mp3');
     this.ninjaAudio = new Audio('../../audio/ninja.mp3');
     this.sadViolinAudio = new Audio('../../audio/sad_violin.mp3');
 
@@ -111,7 +109,7 @@ export default class UI
   }
 
   unlockAudio() {
-    let soundEffects = [this.bruhAudio, this.reallyNiggaAudio, this.airHornAudio, this.allahuAkbharAudio, this.ninjaAudio, this.sadViolinAudio];
+    let soundEffects = [this.bruhAudio, this.airHornAudio, this.ninjaAudio, this.sadViolinAudio];
 
     for (let audio of soundEffects) {
       audio.load();
@@ -123,8 +121,8 @@ export default class UI
 
   playAudio(audioName) {
     let soundEffects = [
-      ["bruh", "really nigga", "air horn", "allahu akbar", "ninja", "sad violin"],
-      [this.bruhAudio, this.reallyNiggaAudio, this.airHornAudio, this.allahuAkbharAudio, this.ninjaAudio, this.sadViolinAudio]
+      ["bruh", "air horn", "ninja", "sad violin"],
+      [this.bruhAudio, this.airHornAudio, this.ninjaAudio, this.sadViolinAudio]
     ]
 
     for (let i = 0; i < soundEffects[0].length; i++){
