@@ -293,7 +293,6 @@ export default class UI
   startSelect(mouseX: number, mouseY: number) {
     this.mouse.position.x = mouseX - this.canvas.bounds.left;
     this.mouse.position.y = mouseY - this.canvas.bounds.top;
-    this.mouse.moveDistance = 0;
 
     if(!this.mouse.isDragging) {
       this.startBoard = this.board.position;
