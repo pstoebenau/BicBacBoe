@@ -44,6 +44,7 @@ button {
 
 button:active {
   transform: scale(.9);
+  transition: transform .1s;
 }
 
 .container {
@@ -80,6 +81,33 @@ input[type="week"],
 select:focus,
 textarea {
   font-size: 16px;
+}
+
+/* Tooltip */
+.tooltip {
+  position: relative;
+}
+
+.tooltip .tooltiptext {
+  visibility: hidden;
+  opacity: 0;
+  width: 70px;
+  background-color: #555;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px 0;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  margin-left: -35px;
+}
+
+.tooltip:active .tooltiptext {
+  visibility: visible;
+  opacity: 1;
+  transition: ease-out opacity .3s, visibility 1s;
 }
 
 .slider {

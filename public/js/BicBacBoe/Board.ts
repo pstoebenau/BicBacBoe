@@ -101,6 +101,9 @@ export default class Board {
 
     // Get index of box corresponding to pos
     gridBox = grid.getBox(pos);
+    // Initialize moves
+    if (grid.moves == null)
+      grid.moves = [[null, null, null],[null, null, null],[null, null, null]];
     // Check if box is already filled
     if (grid.moves[gridBox.row][gridBox.col])
       return false;
@@ -126,18 +129,22 @@ export default class Board {
   checkWin(grid: Grid, trail: Index[]) {
     let index;
     let win = grid.checkWin(this.turn % 2);
-
-    if (grid.parent == null) {
-      if (win) {
-        grid.close();
-        this.ui.win(this.turn % 2);
-      }
-      return;
-    }
-
+    
     if (!win)
       return;
 
+    // Handle game win
+    if (grid.parent == null && win) {
+      grid.close();
+      this.ui.win(this.turn % 2);
+      return;
+    }
+
+    // Handle grid win
+    // Initialize moves
+    if (grid.parent.moves == null)
+      grid.parent.moves = [[null, null, null],[null, null, null],[null, null, null]];
+    
     grid.close();
     index = grid.getIndexRelParent();
     grid.parent.fillBox(index.row, index.col, this.turn % 2);

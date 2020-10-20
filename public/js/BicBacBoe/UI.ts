@@ -102,7 +102,7 @@ export default class UI
 
     // Mouse and touch controls
     // Mouse
-    this.canvas.getElement().addEventListener("mouseleave", (e) => this.stopSelect());
+    this.canvas.getElement().addEventListener("mouseleave", (e) => this.mouse.isDown = false);
     this.canvas.getElement().addEventListener("mousedown", (e) => this.startSelect(e.clientX, e.clientY));
     this.canvas.getElement().addEventListener("mousemove", (e) => this.updateMousePos(e.clientX, e.clientY));
     this.canvas.getElement().addEventListener("mouseup", () => this.stopSelect());
@@ -198,7 +198,8 @@ export default class UI
   }
 
   downloadBoard() {
-    console.log(this.board.getBoardData());
+    let boardDataJSON = JSON.stringify(this.board.getBoardData());
+    navigator.clipboard.writeText(boardDataJSON);
   }
 
   changeDim() {
@@ -304,8 +305,10 @@ export default class UI
 
   // Update mouse variable
   updateMousePos(mouseX: number, mouseY: number) {
-    if (!this.mouse.isDown)
+    if (!this.mouse.isDown) {
+      this.mouse.isDragging = false;
       return;
+    }
 
     this.mouse.position.x = mouseX - this.canvas.bounds.left;
     this.mouse.position.y = mouseY - this.canvas.bounds.top;

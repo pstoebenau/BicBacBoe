@@ -11,11 +11,7 @@ export default class Grid
   size;
   ctx;
   gridPoints: [Position[], Position[], Position[]] = [[],[],[]];
-  moves: [string[], string[], string[]] = [
-    [null, null, null],
-    [null, null, null],
-    [null, null, null]
-  ];
+  moves: [string[], string[], string[]] = null;
   parent: Grid = null;
   children: [Grid[], Grid[], Grid[]] = null;
 
@@ -145,7 +141,7 @@ export default class Grid
 
   fillBox(row: number, col: number, player: number)
   {
-    if(this.moves[row][col] == "X" || this.moves[row][col] == "O")
+    if(this.moves[row][col] != null)
       return;
     if(player == 0)
       this.moves[row][col] = "X";
@@ -210,9 +206,12 @@ export default class Grid
     gridData.selectable = grid.selectable;
     
     // Set moves
-    for (let i = 0; i < 3; i++)
-      for (let j = 0; j < 3; j++)
-        gridData.moves[i][j] = grid.moves[i][j];
+    if (grid.moves == null)
+      gridData.moves = null;
+    else
+      for (let i = 0; i < 3; i++)
+        for (let j = 0; j < 3; j++)
+          gridData.moves[i][j] = grid.moves[i][j];
 
     // Base Case
     if (grid.children == null) {
@@ -251,6 +250,7 @@ export default class Grid
   {
     this.updateGridPoints();
 
+    // Initialize Children
     this.children = [[],[],[]];
     for (var i = 0; i < 3; i++)
     {
@@ -303,22 +303,23 @@ export default class Grid
     this.ctx.closePath();
 
     // Player markers
-    for (let i = 0; i < this.moves.length; i++)
-    {
-      for (let j = 0; j < this.moves[i].length; j++)
+    if (this.moves != null)
+      for (let i = 0; i < this.moves.length; i++)
       {
-        if(this.moves[i][j] == "X" || this.moves[i][j] == "O")
+        for (let j = 0; j < this.moves[i].length; j++)
         {
-          this.ctx.beginPath();
-          this.ctx.font = this.size/3 + "px Arial";
-          this.ctx.textBaseline = "middle";
-          this.ctx.textAlign = "center";
-          this.ctx.fillStyle = color;
-          this.ctx.fillText(this.moves[i][j], this.gridPoints[i][j].x, this.gridPoints[i][j].y);
-          this.ctx.closePath();
+          if(this.moves[i][j] == "X" || this.moves[i][j] == "O")
+          {
+            this.ctx.beginPath();
+            this.ctx.font = this.size/3 + "px Arial";
+            this.ctx.textBaseline = "middle";
+            this.ctx.textAlign = "center";
+            this.ctx.fillStyle = color;
+            this.ctx.fillText(this.moves[i][j], this.gridPoints[i][j].x, this.gridPoints[i][j].y);
+            this.ctx.closePath();
+          }
         }
       }
-    }
 
     // Highlight selectable grids
     if(this.selectable && !this.closed)
