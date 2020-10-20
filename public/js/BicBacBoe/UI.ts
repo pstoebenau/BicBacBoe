@@ -3,7 +3,7 @@ import Position from "../misc/Position";
 import Board from "./Board";
 import Client from "./Client";
 
-const DRAG_THRESHHOLD = 20
+const DRAG_THRESHHOLD = 20;
 
 export default class UI
 {
@@ -43,11 +43,9 @@ export default class UI
   mouse: {
     position: Position,
     isDown: boolean,
-    isDragging: boolean,
-    moveDistance: number
+    isDragging: boolean
   };
   startMousePos: Position;
-  prevMousePos: Position;
   startTouchDistance: number;
   isPinching: boolean;
   startBoard: Position;
@@ -88,11 +86,9 @@ export default class UI
     this.mouse = {
       position: new Position(0,0),
       isDown: false,
-      isDragging: false,
-      moveDistance: 0
+      isDragging: false
     };
     this.startMousePos = new Position(0,0);
-    this.prevMousePos = new Position(0,0);
     this.startTouchDistance = 0;
     this.isPinching = false;
     this.startBoard = new Position(0,0);
@@ -314,9 +310,9 @@ export default class UI
 
     this.mouse.position.x = mouseX - this.canvas.bounds.left;
     this.mouse.position.y = mouseY - this.canvas.bounds.top;
-    this.mouse.moveDistance += this.mouse.position.distance(this.prevMousePos);
+    let moveDistance = this.mouse.position.distance(this.startMousePos);
 
-    if(this.mouse.isDown)
+    if(this.mouse.isDown && moveDistance > DRAG_THRESHHOLD)
       this.mouse.isDragging = true;
 
     // Moves board when dragging
@@ -326,15 +322,14 @@ export default class UI
       this.board.move(newPos);
     }
 
-    this.prevMousePos = this.mouse.position.copy();
     this.update();
   }
 
   // Update board on mouse release
   stopSelect() {
     this.mouse.isDown = false;
-
-    if(this.mouse.isDragging && this.mouse.moveDistance > DRAG_THRESHHOLD) {
+    
+    if(this.mouse.isDragging) {
       this.mouse.isDragging = false;
       return;
     }

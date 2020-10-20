@@ -4,7 +4,8 @@
   "description": "Multidimensional Tic Tac Toe",
   "main": "server.js",
   "scripts": {
-    "start": "npm-run-all --parallel watch:server watch:build",
+    "start": "webpack -p && node server.js",
+    "start:dev": "npm-run-all --parallel watch:server watch:build",
     "test": "echo \"Error: no test specified\" && exit 1",
     "watch:build": "webpack --watch",
     "watch:server": "nodemon server.js",
