@@ -1,108 +1,100 @@
-import Position from "../misc/position.js";
-import Grid from "./grid.js"
-import DataGrid from "./dataGrid.js"
+import Position from "../misc/Position";
+import Grid from "./Grid"
+import GridData from "../models/GridData"
+import BoardData from "../models/BoardData";
+import UI from "./UI";
+
+interface Index {
+  row: number,
+  col: number,
+}
 
 export default class Board {
-  position;
-  size;
-  color;
-  dimensions;
-  turn;
-  grids;
-  canvas;
-  ctx;
-  ui;
+  position: Position;
+  size: number;
+  color: string;
+  dimensions: number;
+  turn: number;
+  rootGrid: Grid;
+  canvas: HTMLCanvasElement;
+  ctx: CanvasRenderingContext2D;
+  ui: UI;
 
-  constructor(x, y, size, dimen, canvas) {
+  constructor(position: Position, size: number, dimensions: number, canvas: HTMLCanvasElement) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
-    this.position = new Position(x, y);
+    this.position = position;
     this.size = size;
     this.color = "silver";
-    this.dimensions = dimen;
-    this.grids = new Grid(x, y, size, this.ctx);
+    this.dimensions = dimensions;
+    this.rootGrid = new Grid(position, size, this.ctx);
     this.turn = 0;
 
-    this.createGrids(this.grids, this.dimensions - 1);
-    this.makeAllSelectable(this.grids);
+    this.createGrids(this.rootGrid, this.dimensions - 1);
+    this.makeAllSelectable(this.rootGrid);
   }
 
   reset() {
-    this.grids = new Grid(this.position.x, this.position.y, this.size, this.ctx);
+    this.rootGrid = new Grid(this.position, this.size, this.ctx);
     this.turn = 0;
 
-    this.createGrids(this.grids, this.dimensions - 1);
-    this.makeAllSelectable(this.grids);
+    this.createGrids(this.rootGrid, this.dimensions - 1);
+    this.makeAllSelectable(this.rootGrid);
   }
 
   getBoardData() {
-    var gridData = new DataGrid();
-    this.getGridData(this.grids, gridData);
+    let gridData = this.rootGrid.getGridData();
 
-    return {
+    return <BoardData>{
       dimensions: this.dimensions,
       turn: this.turn,
-      gridData: gridData,
+      gridData: gridData
     };
   }
 
-  getGridData(grid, gridData) {
-    if (grid.children == null) {
-      grid.getData(gridData);
-      return;
-    }
-
-    grid.getData(gridData);
-    gridData.addChildren();
-
-    for (var i = 0; i < 3; i++)
-      for (var j = 0; j < 3; j++)
-        this.getGridData(grid.children[i][j], gridData.children[i][j]);
-  }
-
-  loadBoard(boardData) {
+  loadBoard(boardData: BoardData) {
     this.changeDim(boardData.dimensions);
     this.turn = boardData.turn;
-    this.updateGridData(this.grids, boardData.gridData);
+    this.updateGridData(this.rootGrid, boardData.gridData);
   }
 
-  updateGridData(grid, dataGrid) {
+  updateGridData(grid: Grid, gridData: GridData) {
     if (grid.children == null) {
-      grid.updateData(dataGrid);
+      grid.updateData(<Grid>gridData);
       return;
     }
 
-    grid.updateData(dataGrid);
+    grid.updateData(<Grid>gridData);
 
     for (var i = 0; i < 3; i++)
       for (var j = 0; j < 3; j++)
-        this.updateGridData(grid.children[i][j], dataGrid.children[i][j]);
+        this.updateGridData(grid.children[i][j], gridData.children[i][j]);
   }
 
-  changeDim(dimensions) {
+  changeDim(dimensions: number) {
     this.dimensions = dimensions;
     this.reset();
   }
 
-  resize(size) {
+  resize(size: number) {
     this.size = size;
 
-    this.grids.resize(this.grids, size, this.position);
+    this.rootGrid.resize(this.rootGrid, size, this.position);
   }
 
-  move(pos) {
+  move(pos: Position) {
     let posChange = pos.subtract(this.position);
 
     this.position = pos.copy();
-    this.grids.move(this.grids, posChange);
+    this.rootGrid.move(this.rootGrid, posChange);
   }
 
-  createMove(pos) {
+  processMove(pos: Position) {
     let grid;
     let gridBox;
-    let trail = [];
+    let trail: Index[] = [];
 
-    grid = this.grids.getGrid(this.grids, pos, this.turn % 2);
+    grid = this.rootGrid.getGrid(this.rootGrid, pos, this.turn % 2);
 
     if (!grid || !grid.selectable || grid.closed)
       return false;
@@ -118,7 +110,9 @@ export default class Board {
     this.resetSelectable();
 
     // Check for wins
-    this.checkAllWin(grid, trail);
+    this.checkWin(grid, trail);
+
+    // Make next Grid selectable
     grid = this.getNextGrid(grid, trail, 0);
     grid.selectable = true;
 
@@ -129,7 +123,7 @@ export default class Board {
     return true;
   }
 
-  checkAllWin(grid, trail) {
+  checkWin(grid: Grid, trail: Index[]) {
     let index;
     let win = grid.checkWin(this.turn % 2);
 
@@ -149,10 +143,10 @@ export default class Board {
     grid.parent.fillBox(index.row, index.col, this.turn % 2);
     trail.push(index);
 
-    this.checkAllWin(grid.parent, trail);
+    this.checkWin(grid.parent, trail);
   }
 
-  getNextGrid(grid, trail, i) {
+  getNextGrid(grid: Grid, trail: Index[], i: number) {
     if (grid.parent == null)
       return grid;
 
@@ -164,7 +158,7 @@ export default class Board {
     return grid.parent.children[trail[i].row][trail[i].col];
   }
 
-  createGrids(grid, dimension) {
+  createGrids(grid: Grid, dimension: number) {
     if (dimension == 0) {
       grid.updateGridPoints();
       return;
@@ -177,15 +171,15 @@ export default class Board {
         this.createGrids(grid.children[i][j], dimension - 1);
   }
 
-  makeAllSelectable(grid) {
-    this.grids.makeAllSelectable(grid);
+  private makeAllSelectable(grid: Grid) {
+    this.rootGrid.makeAllSelectable(grid);
   }
 
   resetSelectable() {
-    this.grids.resetSelectable(this.grids);
+    this.rootGrid.resetSelectable(this.rootGrid);
   }
 
-  draw(grid, dimension) {
+  draw(grid: Grid, dimension: number) {
     if (dimension == 0)
       return;
 
@@ -200,6 +194,6 @@ export default class Board {
   }
 
   update() {
-    this.draw(this.grids, this.dimensions);
+    this.draw(this.rootGrid, this.dimensions);
   }
 }

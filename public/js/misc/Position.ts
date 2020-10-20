@@ -1,44 +1,40 @@
 export default class Position
 {
-  x;
-  y;
+  x: number;
+  y: number;
 
-  constructor(x, y)
+  constructor(x: number, y: number)
   {
     this.x = x;
     this.y = y;
   }
 
-  add(pos)
+  add(pos: Position)
   {
     return new Position(this.x + pos.x, this.y + pos.y);
   }
 
-  subtract(pos)
+  subtract(pos: Position)
   {
     return new Position(this.x - pos.x, this.y - pos.y);
   }
 
-  mult(x)
+  mult(x: number)
   {
     return new Position(this.x * x, this.y * x);
   }
 
-  distance(pos)
+  distance(pos: Position)
   {
-    console.log(pos);
-    let distance = Math.pow(this.x-pos.x, 2);
-    distance += Math.pow(this.y-pos.y, 2);
-    distance = Math.sqrt(distance, 2);
-    return distance;
+    return Math.sqrt(Math.pow(this.x - pos.x, 2) + Math.pow(this.y - pos.y, 2));
   }
 
-  angle(pos)
+  angle(pos: Position)
   {
     return Math.atan((this.y-pos.y)/(this.x-pos.x));
   }
 
-  equals(pos)
+  equals(pos: Position)
   {
     return this.x == pos.x && this.y == pos.y;
   }
@@ -48,7 +44,7 @@ export default class Position
     return new Position(this.x, this.y);
   }
 
-  isInsideBox(center, size)
+  isInsideBox(center: Position, size: number)
   {
     let radius = new Position(size/2, size/2);
     let topLeftCorner = center.subtract(radius);

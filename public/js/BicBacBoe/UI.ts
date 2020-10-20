@@ -1,42 +1,61 @@
-import Position from "../misc/position.js";
+import Canvas from "../misc/Canvas";
+import Position from "../misc/Position";
+import Board from "./Board";
+import Client from "./Client";
+
+const DRAG_THRESHHOLD = 20
 
 export default class UI
 {
-  client;
-  canvas;
-  canvasSetup;
-  board;
+  client: Client;
+  canvas: Canvas;
+  board: Board;
+  update: Function;
   playerMark = 0;
 
   // Audio
-  bruhAudio;
-  reallyNibbaAudio;
-  airHornAudio;
+  bruhAudio: HTMLAudioElement;
+  reallyNibbaAudio: HTMLAudioElement;
+  airHornAudio: HTMLAudioElement;
+  ninjaAudio: HTMLAudioElement;
+  sadViolinAudio: HTMLAudioElement;
+
+  // Modals
+  multiplayerPane: HTMLElement;
 
   // Buttons and Sliders
-  multiplayerButton;
-  dimensionSlider;
-  zoomSlider;
-  fullScrnBttn;
-  resetBttn;
-  saveBttn;
-  downloadBttn;
+  multiplayerButton: HTMLButtonElement;
+  fullScrnBttn: HTMLButtonElement;
+  resetBttn: HTMLButtonElement;
+  saveBttn: HTMLButtonElement;
+  downloadBttn: HTMLButtonElement;
+  dimensionSlider: HTMLInputElement;
+  zoomSlider: HTMLInputElement;
+  opponentButton: HTMLButtonElement;
+  usernameButton: HTMLButtonElement;
 
   // Text inputs
-  opponentText;
+  opponentID: HTMLTextAreaElement;
+  opponentText: HTMLTextAreaElement;
+  usernameText: HTMLTextAreaElement;
 
   // Mouse
-  mouse;
-  startMousePos;
-  startTouchDistance;
-  isPinching;
-  startBoard;
+  mouse: {
+    position: Position,
+    isDown: boolean,
+    isDragging: boolean,
+    moveDistance: number
+  };
+  startMousePos: Position;
+  prevMousePos: Position;
+  startTouchDistance: number;
+  isPinching: boolean;
+  startBoard: Position;
 
-  constructor(board, canvasSetup, client, update) {
+  constructor(board: Board, canvas: Canvas, client: Client, update: Function) {
     this.client = client;
     this.board = board;
-    this.canvasSetup = canvasSetup;
-    this.canvas = canvasSetup.canvas;
+    this.canvas = canvas;
     this.update = update;
 
     // Audio
@@ -45,27 +64,35 @@ export default class UI
     this.ninjaAudio = new Audio('../../audio/ninja.mp3');
     this.sadViolinAudio = new Audio('../../audio/sad_violin.mp3');
 
-    // Buttons and Sliders
-    this.multiplayerButton = document.getElementById("multiplayerButton");
+    // Modals
     this.multiplayerPane = document.getElementById("multiplayerPane");
-    this.dimensionSlider = document.getElementById("dimensionRange");
-    this.zoomSlider = document.getElementById("zoomRange");
-    this.opponentID = document.getElementById("opponentID");
-    this.fullScrnBttn = document.getElementById("fullScrnBttn");
-    this.resetBttn = document.getElementById("resetBttn");
-    this.saveBttn = document.getElementById("saveBttn");
-    this.downloadBttn = document.getElementById("downloadBttn");
 
+    // Buttons and Sliders
+    this.multiplayerButton = <HTMLButtonElement>document.getElementById("multiplayerButton");
+    this.dimensionSlider = <HTMLInputElement>document.getElementById("dimensionRange");
+    this.zoomSlider = <HTMLInputElement>document.getElementById("zoomRange");
+    this.fullScrnBttn = <HTMLButtonElement>document.getElementById("fullScrnBttn");
+    this.resetBttn = <HTMLButtonElement>document.getElementById("resetBttn");
+    this.saveBttn = <HTMLButtonElement>document.getElementById("saveBttn");
+    this.downloadBttn = <HTMLButtonElement>document.getElementById("downloadBttn");
+    this.opponentButton = <HTMLButtonElement>document.getElementById("opponentButton");
+    this.usernameButton = <HTMLButtonElement>document.getElementById("usernameButton");
+    
     // Inputs
-    this.opponentText = document.getElementById("opponentText");
-    this.opponentButton = document.getElementById("opponentButton");
-    this.usernameText = document.getElementById("usernameText");
-    this.usernameButton = document.getElementById("usernameButton");
-
+    this.opponentText = <HTMLTextAreaElement>document.getElementById("opponentText");
+    this.usernameText = <HTMLTextAreaElement>document.getElementById("usernameText");
+    this.opponentID = <HTMLTextAreaElement>document.getElementById("opponentID");
+    
 
     // Mouse
-    this.mouse = {position: new Position(0,0), isDown: false, isDragging: false};
+    this.mouse = {
+      position: new Position(0,0),
+      isDown: false,
+      isDragging: false,
+      moveDistance: 0
+    };
     this.startMousePos = new Position(0,0);
+    this.prevMousePos = new Position(0,0);
     this.startTouchDistance = 0;
     this.isPinching = false;
     this.startBoard = new Position(0,0);
@@ -79,27 +106,28 @@ export default class UI
 
     // Mouse and touch controls
     // Mouse
-    this.canvas.addEventListener("mousedown", (e) => this.startSelect(e.clientX, e.clientY));
-    this.canvas.addEventListener("mousemove", (e) => this.updateMousePos(e.clientX, e.clientY));
-    this.canvas.addEventListener("mouseup", () => this.stopSelect());
+    this.canvas.getElement().addEventListener("mouseleave", (e) => this.stopSelect());
+    this.canvas.getElement().addEventListener("mousedown", (e) => this.startSelect(e.clientX, e.clientY));
+    this.canvas.getElement().addEventListener("mousemove", (e) => this.updateMousePos(e.clientX, e.clientY));
+    this.canvas.getElement().addEventListener("mouseup", () => this.stopSelect());
     document.body.addEventListener("wheel", (e) => {
       const delta = Math.sign(e.deltaY);
       this.zoom(delta);
     });
     // Touch
-    this.canvas.addEventListener("touchstart", () => this.startTouch(), false);
-    this.canvas.addEventListener("touchmove", () => this.moveTouch(), false);
-    this.canvas.addEventListener("touchend", () => this.stopTouch(), false);
-    this.canvas.addEventListener("touchcancel", () => this.stopTouch(), false);
+    this.canvas.getElement().addEventListener("touchstart", (e) => this.startTouch(e), false);
+    this.canvas.getElement().addEventListener("touchmove", (e) => this.moveTouch(e), false);
+    this.canvas.getElement().addEventListener("touchend", (e) => this.stopTouch(e), false);
+    this.canvas.getElement().addEventListener("touchcancel", (e) => this.stopTouch(e), false);
 
     // Multiplayer Controls
     this.multiplayerButton.addEventListener('click', () => this.showMultiplayerPane());
-    this.opponentButton.addEventListener('click', () => client.setOpponent(this.opponentText.value));
-    this.usernameButton.addEventListener('click', () => client.setUsername(this.usernameText.value));
+    this.opponentButton.addEventListener('click', () => this.client.setOpponent(this.opponentText.value));
+    this.usernameButton.addEventListener('click', () => this.client.setUsername(this.usernameText.value));
 
     // Board Controls
     this.dimensionSlider.addEventListener("input", () => this.changeDim());
-    this.fullScrnBttn.addEventListener('click', () => this.toggleFullScreen());
+    this.fullScrnBttn.addEventListener('click', () => console.log("No fullscreen functionality yet!"));
     this.resetBttn.addEventListener('click', () => {
       this.resizeBoard(this.calcBoardSize());
       this.board.reset();
@@ -119,25 +147,25 @@ export default class UI
     }
   }
 
-  playAudio(audioName) {
-    let soundEffects = [
-      ["bruh", "air horn", "ninja", "sad violin"],
-      [this.bruhAudio, this.airHornAudio, this.ninjaAudio, this.sadViolinAudio]
-    ]
-
-    for (let i = 0; i < soundEffects[0].length; i++){
-      if (audioName === soundEffects[0][i]) {
-        soundEffects[1][i].load();
-        soundEffects[1][i].play();
-        return;
-      }
+  playAudio(audioName: string) {
+    let soundEffects: { [id: string]: HTMLAudioElement}= {
+      "bruh": this.bruhAudio,
+      "air horn": this.airHornAudio,
+      "ninja": this.ninjaAudio,
+      "sad violin": this.sadViolinAudio
+    }
+    let soundEffect: HTMLAudioElement = soundEffects[audioName];
+    if (!soundEffect) {
+      console.error("Sound effect does not exist");
+      return;
     }
 
-    console.error("Sound Effect does not exist");
+    soundEffect.load();
+    soundEffect.play();
   }
 
   updatePlayerTable() {
-    let playerTable = document.getElementById('playerTable');
+    let playerTable: HTMLTableElement = <HTMLTableElement>document.getElementById('playerTable');
 
     for (let i = playerTable.rows.length - 1; i >= 1; i--)
     playerTable.deleteRow(i);
@@ -153,21 +181,6 @@ export default class UI
     }
   }
 
-  toggleFullScreen() {
-    var doc = window.document;
-    var docEl = document;
-
-    var requestFullScreen = docEl.requestFullscreen || docEl.mozRequestFullScreen || docEl.webkitRequestFullScreen || docEl.msRequestFullscreen;
-    var cancelFullScreen = doc.exitFullscreen || doc.mozCancelFullScreen || doc.webkitExitFullscreen || doc.msExitFullscreen;
-
-    if(!doc.fullscreenElement && !doc.mozFullScreenElement && !doc.webkitFullscreenElement && !doc.msFullscreenElement)
-      requestFullScreen.call(docEl);
-    else
-      cancelFullScreen.call(doc);
-
-    this.update();
-  }
-
   showMultiplayerPane() {
     if(this.multiplayerPane.style.display === "block")
       this.multiplayerPane.style.display = "none";
@@ -178,35 +191,28 @@ export default class UI
   }
 
   calcBoardSize() {
-    let size;
-
-    if(this.canvas.width < this.canvas.height)
-      size = this.canvas.width/2;
-    else
-      size = this.canvas.height/2;
-
-    return size;
+    return this.canvas.getBoundingDimension();
   }
 
-  resizeBoard(size) {
+  resizeBoard(size: number) {
     // Resize board according to zoom and screen size
     this.board.resize(size);
-    this.board.move(new Position(this.canvas.width/2, this.canvas.height/2));
+    this.board.move(this.canvas.getCenter());
     this.update();
   }
 
   downloadBoard() {
-
+    console.log(this.board.getBoardData());
   }
 
   changeDim() {
-    this.board.changeDim(this.dimensionSlider.value);
+    this.board.changeDim(Number.parseInt(this.dimensionSlider.value));
     this.update();
   }
 
-  zoom(amount) {
+  zoom(amount: number) {
     let movPos;
-    let center = new Position(this.canvas.width/2, this.canvas.height/2);
+    let center = this.canvas.getCenter();
     let boardSize = this.board.size;
     let deltaSize = this.board.size;
 
@@ -225,7 +231,7 @@ export default class UI
     this.update();
   }
 
-  startTouch() {
+  startTouch(event: TouchEvent) {
     event.preventDefault();
 
     let touch = new Position(event.touches[0].pageX, event.touches[0].pageY);
@@ -242,7 +248,7 @@ export default class UI
     this.unlockAudio();
   }
 
-  moveTouch() {
+  moveTouch(event: TouchEvent) {
     let touch = new Position(event.touches[0].pageX, event.touches[0].pageY);
 
     event.preventDefault();
@@ -269,7 +275,7 @@ export default class UI
     this.updateMousePos(touch.x, touch.y)
   }
 
-  stopTouch() {
+  stopTouch(event: TouchEvent) {
     if(event.touches.length <= 0 && this.isPinching) {
       this.mouse.isDown = false;
 
@@ -288,9 +294,10 @@ export default class UI
     this.stopSelect();
   }
 
-  startSelect(mouseX, mouseY) {
-    this.mouse.position.x = mouseX - this.canvas.getBoundingClientRect().left;
-    this.mouse.position.y = mouseY - this.canvas.getBoundingClientRect().top;
+  startSelect(mouseX: number, mouseY: number) {
+    this.mouse.position.x = mouseX - this.canvas.bounds.left;
+    this.mouse.position.y = mouseY - this.canvas.bounds.top;
+    this.mouse.moveDistance = 0;
 
     if(!this.mouse.isDragging) {
       this.startBoard = this.board.position;
@@ -301,9 +308,13 @@ export default class UI
   }
 
   // Update mouse variable
-  updateMousePos(mouseX, mouseY) {
-    this.mouse.position.x = mouseX - this.canvas.getBoundingClientRect().left;
-    this.mouse.position.y = mouseY - this.canvas.getBoundingClientRect().top;
+  updateMousePos(mouseX: number, mouseY: number) {
+    if (!this.mouse.isDown)
+      return;
+
+    this.mouse.position.x = mouseX - this.canvas.bounds.left;
+    this.mouse.position.y = mouseY - this.canvas.bounds.top;
+    this.mouse.moveDistance += this.mouse.position.distance(this.prevMousePos);
 
     if(this.mouse.isDown)
       this.mouse.isDragging = true;
@@ -315,6 +326,7 @@ export default class UI
       this.board.move(newPos);
     }
 
+    this.prevMousePos = this.mouse.position.copy();
     this.update();
   }
 
@@ -322,7 +334,7 @@ export default class UI
   stopSelect() {
     this.mouse.isDown = false;
 
-    if(this.mouse.isDragging) {
+    if(this.mouse.isDragging && this.mouse.moveDistance > DRAG_THRESHHOLD) {
       this.mouse.isDragging = false;
       return;
     }
@@ -336,9 +348,11 @@ export default class UI
         return;
     }
 
-    if(this.board.createMove(this.mouse.position)) {
+    if(this.board.processMove(this.mouse.position)) {
       this.playAudio("bruh");
-      this.client.sendBoardData(this.board.getBoardData());
+      
+      if (this.client.opponentName != "N/A")
+        this.client.sendBoardData(this.board.getBoardData());
     }
 
     this.update();
@@ -348,8 +362,8 @@ export default class UI
     this.playAudio("sad violin");
   }
 
-  win(winner) {
+  win(winner: number) {
     this.playAudio("air horn");
-    client.win();
+    this.client.win();
   }
 }

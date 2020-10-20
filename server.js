@@ -51,7 +51,7 @@ io.sockets.on('connection', (socket) =>{
     if (player.opponentID >= 0) {
       let opponentSocket = getSocketFromID(player.opponentID);
       if (opponentSocket != null)
-        opponentSocket.emit('connectionDetails', {isConnected: false, opponentName: "N/A"});
+        opponentSocket.emit('connectionDetails', { isConnected: false, opponentName: "N/A" });
     }
 
     socket.emit('connectionDetails', {isConnected: false, opponentName: "N/A"});

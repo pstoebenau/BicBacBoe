@@ -1,31 +1,37 @@
-import Position from "../misc/position.js";
+import Position from "../misc/Position";
+import GridData from "../models/GridData";
+
+const GRID_GAP = 3.3;
 
 export default class Grid
 {
-  GRID_GAP = 3.3;
   position;
   closed = false;
   selectable = false;
   size;
-  gridPoints = [[],[],[]];
-  moves = [[],[],[]];
-  parent = null;
-  children = null;
   ctx;
+  gridPoints: [Position[], Position[], Position[]] = [[],[],[]];
+  moves: [string[], string[], string[]] = [
+    [null, null, null],
+    [null, null, null],
+    [null, null, null]
+  ];
+  parent: Grid = null;
+  children: [Grid[], Grid[], Grid[]] = null;
 
-  constructor(x, y, size, ctx)
+  constructor(position: Position, size: number, ctx: CanvasRenderingContext2D)
   {
-    this.position = new Position(x, y);
+    this.position = position;
     this.size = size;
     this.ctx = ctx;
 
     this.updateGridPoints();
   }
 
-  resize(grid, size, pos)
+  resize(grid: Grid, size: number, position: Position)
   {
     grid.size = size;
-    grid.position = pos.copy();
+    grid.position = position.copy();
     grid.updateGridPoints();
 
     if(grid.children == null)
@@ -33,10 +39,10 @@ export default class Grid
 
     for (var i = 0; i < 3; i++)
       for (var j = 0; j < 3; j++)
-        grid.children[i][j].resize(grid.children[i][j], size/this.GRID_GAP, grid.gridPoints[i][j]);
+        grid.children[i][j].resize(grid.children[i][j], size/GRID_GAP, grid.gridPoints[i][j]);
   }
 
-  move(grid, posChange)
+  move(grid: Grid, posChange: Position)
   {
     grid.position = grid.position.add(posChange);
     grid.updateGridPoints();
@@ -50,9 +56,9 @@ export default class Grid
   }
 
   // Writes the players move to grid
-  getGrid(grid, pos, player)
+  getGrid(grid: Grid, position: Position, player: number): Grid
   {
-    if(!pos.isInsideBox(grid.position, grid.size))
+    if(!position.isInsideBox(grid.position, grid.size))
       return;
 
     if(grid.children != null)
@@ -61,7 +67,7 @@ export default class Grid
         for (var j = 0; j < 3; j++)
         {
           // Return only if grid is found
-          let retval = this.getGrid(grid.children[i][j], pos, player);
+          let retval = this.getGrid(grid.children[i][j], position, player);
           if(retval)
             return retval;
         }
@@ -73,11 +79,11 @@ export default class Grid
   }
 
   // Gets the row and col of box in pos
-  getBox(pos)
+  getBox(position: Position)
   {
     for (var i = 0; i < 3; i++)
       for (var j = 0; j < 3; j++)
-        if(pos.isInsideBox(this.gridPoints[i][j], this.size/3))
+        if(position.isInsideBox(this.gridPoints[i][j], this.size/3))
           return {row: i, col: j};
   }
 
@@ -92,7 +98,7 @@ export default class Grid
       }
   }
 
-  makeAllSelectable(grid)
+  makeAllSelectable(grid: Grid)
   {
     if(grid.children == null)
     {
@@ -105,7 +111,7 @@ export default class Grid
         this.makeAllSelectable(grid.children[i][j]);
   }
 
-  resetSelectable(grid)
+  resetSelectable(grid: Grid)
   {
     grid.selectable = false;
 
@@ -122,7 +128,7 @@ export default class Grid
     this.closeHelper(this);
   }
 
-  closeHelper(grid)
+  closeHelper(grid: Grid)
   {
     if(grid.children == null)
     {
@@ -137,7 +143,7 @@ export default class Grid
         this.closeHelper(grid.children[i][j]);
   }
 
-  fillBox(row, col, player)
+  fillBox(row: number, col: number, player: number)
   {
     if(this.moves[row][col] == "X" || this.moves[row][col] == "O")
       return;
@@ -151,7 +157,7 @@ export default class Grid
       console.error("Invalid player!");
   }
 
-  checkWin(player)
+  checkWin(player: number)
   {
     let mark = player ? "O" : "X";
 
@@ -176,7 +182,7 @@ export default class Grid
     return 0;
   }
 
-  trailCheck(row, col, rDirect, cDirect, playerMark)
+  trailCheck(row: number, col: number, rDirect: number, cDirect: number, playerMark: string)
   {
     if(this.moves[row][col] == playerMark)
       if(this.moves[row][col] == this.moves[row+rDirect][col+cDirect] && this.moves[row][col] == this.moves[row+2*rDirect][col+2*cDirect])
@@ -185,27 +191,53 @@ export default class Grid
     return false;
   }
 
-  getData(data)
-  {
-    let isNull = true;
-
-    data.closed = this.closed;
-    data.selectable = this.selectable;
-
-    for (var i = 0; i < 3; i++)
-      for (var j = 0; j < 3; j++)
-      {
-        if(this.moves[i][j])
-          isNull = false;
-
-        data.moves[i][j] = this.moves[i][j];
-      }
-
-    if(isNull)
-      data.moves = null;
+  getGridData() {
+    let gridData: GridData = {
+      closed: this.closed,
+      selectable: this.selectable,
+      moves: [[],[],[]],
+      children: [[],[],[]]
+    };
+    
+    this.getGridDataRecur(this, gridData);
+    
+    return gridData;
   }
 
-  updateData(grid)
+  getGridDataRecur(grid: Grid, gridData: GridData) {
+    // Set grid data
+    gridData.closed = grid.closed;
+    gridData.selectable = grid.selectable;
+    
+    // Set moves
+    for (let i = 0; i < 3; i++)
+      for (let j = 0; j < 3; j++)
+        gridData.moves[i][j] = grid.moves[i][j];
+
+    // Base Case
+    if (grid.children == null) {
+      gridData.children = null;
+      return;
+    }
+
+    for (let i = 0; i < 3; i++) {
+      for (let j = 0; j < 3; j++) {
+        gridData.children[i].push(<GridData>{
+          closed: false,
+          selectable: false,
+          moves: [[],[],[]],
+          children: [[],[],[]]
+        });
+      }
+    }
+
+    // Get all child grids data
+    for (let i = 0; i < 3; i++)
+      for (let j = 0; j < 3; j++)
+        this.getGridDataRecur(grid.children[i][j], gridData.children[i][j]);
+  }
+
+  updateData(grid: Grid)
   {
     this.closed = grid.closed;
     this.selectable = grid.selectable;
@@ -219,14 +251,14 @@ export default class Grid
   {
     this.updateGridPoints();
 
-    this.children = [];
+    this.children = [[],[],[]];
     for (var i = 0; i < 3; i++)
     {
       this.children[i] = [];
       for (var j = 0; j < 3; j++)
       {
         let point = this.gridPoints[i][j];
-        this.children[i][j] = new Grid(point.x, point.y, this.size/this.GRID_GAP, this.ctx);
+        this.children[i][j] = new Grid(point, this.size/GRID_GAP, this.ctx);
         this.children[i][j].parent = this;
       }
     }
@@ -245,7 +277,7 @@ export default class Grid
     this.gridPoints[2][2] = new Position(this.position.x+this.size/3, this.position.y+this.size/3);
   }
 
-  draw(color)
+  draw(color: string)
   {
     // Grid
     this.ctx.strokeStyle = color;
