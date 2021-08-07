@@ -1,7 +1,7 @@
 const path = require('path');
 
 module.exports = {
-  entry: './public/js/BicBacBoe/BicBacBoe.ts',
+  entry: './js/index.ts',
   module: {
     rules: [
       {
@@ -17,7 +17,7 @@ module.exports = {
   },
   output: {
     filename: 'bundle.js',
-    path: path.resolve(__dirname, './public/dist'),
+    path: path.resolve(__dirname, './dist'),
   },
   devtool: 'source-map'
 };
