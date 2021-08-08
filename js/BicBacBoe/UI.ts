@@ -1,5 +1,5 @@
 import Canvas from "../misc/Canvas";
-import { TypedEvent } from "../misc/CustomEventEmitter";
+import { TypedEvent } from "../misc/TypedEvent";
 import Position from "../misc/Position";
 import Board from "./Board";
 import Grid from "./Grid";
@@ -170,21 +170,17 @@ export default class UI {
     soundEffect.play();
   }
 
-  updatePlayerTable() {
+  updatePlayerTable(id: string, username: string) {
     let playerTable: HTMLTableElement = <HTMLTableElement>document.getElementById('playerTable');
 
     for (let i = playerTable.rows.length - 1; i >= 1; i--)
-    playerTable.deleteRow(i);
+      playerTable.deleteRow(i);
 
-    // for (let player of this.client.getPlayerList()) {
-    //   let row = playerTable.insertRow(playerTable.rows.length);
+    let row = playerTable.insertRow(playerTable.rows.length);
 
-    //   row.insertCell(0).innerHTML = `${player.id}`;
-    //   row.insertCell(1).innerHTML = player.username;
-
-    //   if (player.id === this.client.getPlayerID())
-    //   row.style.color = "green";
-    // }
+    row.insertCell(0).innerHTML = id;
+    row.insertCell(1).innerHTML = username;
+    row.style.color = "green";
   }
 
   showMultiplayerPane() {
@@ -192,7 +188,6 @@ export default class UI {
       this.multiplayerPane.style.display = "none";
     else {
       this.multiplayerPane.style.display = "block";
-      this.updatePlayerTable();
     }
   }
 
@@ -371,7 +366,6 @@ export default class UI {
 
   win(winner: number) {
     this.playAudio("air horn");
-    // this.client.win();
   }
 
   drawGrid(grid: Grid, color: string)

@@ -1,68 +1,51 @@
-// import io from 'socket.io-client';
-// import BoardData from '../models/BoardData';
-// import ConnectionData from '../models/ConnectionData';
-// import Player from '../models/Player';
-// import UI from './UI';
+import Peer from "peerjs";
+import { TypedEvent } from "../misc/TypedEvent";
+import { GameRequest } from "../models/Network";
 
-// export default class Client {
-//   ui: UI;
-//   socket: SocketIOClient.Socket;
-//   playerID: number;
-//   playerList: Player[];
-//   opponentName = "N/A";
-//   isConnected = false;
+export default class Client {
+  peer: Peer;
+  conn: Peer.DataConnection;
+  isConnected = false;
 
-//   constructor() {
-//     this.socket = io.connect();
+  // Event listeners
+  onPeer = new TypedEvent<string>();
 
-//     this.socket.on('socketID', (id: number) => this.playerID = id);
+  constructor() {
+    this.peer = new Peer();
+    
+    (window as any).peer = this.peer;
+    
+    this.peer.on('open', (id) => {
+      this.onPeer.emit(id);
+    })
+    
+    this.peer.on('connection', (conn) => {
+      conn.on('data', (data) => {
+        console.log(data);
+      });
+      conn.on('open', () => {
+        const req: GameRequest = {
+          method: 'Game Request',
+          username: 'jeff',
+        }
+        conn.send(JSON.stringify(req));
+      });
+    });
+  }
 
-//     this.socket.on('playerList', (playerList: Player[]) => {
-//       this.playerList = playerList;
-//       this.ui.updatePlayerTable();
-//     });
+  resetID() {
+    this.peer = new Peer();
+    console.log("wow");
+    this.peer.on('open', (id) => {
+      console.log("wow");
+      this.onPeer.emit(id);
+    })
+  }
 
-//     this.socket.on('connectionDetails', (connectionData: ConnectionData) => {
-//       this.isConnected = connectionData.isConnected;
-//       this.opponentName = connectionData.opponentName;
-//     });
-
-//     this.socket.on('lose', () => this.ui.lose());
-//   }
-
-//   getPlayerID() {
-//     return this.playerID;
-//   }
-
-//   getPlayerList() {
-//     return this.playerList;
-//   }
-
-//   isMultiplayer() {
-//     return this.isConnected;
-//   }
-
-//   setUsername(username: string) {
-//     this.socket.emit('updateUsername', username);
-//   }
-
-//   setOpponent(username: string) {
-//     this.socket.emit('updateOpponent', username);
-//   }
-
-//   sendBoardData(boardData: BoardData) {
-//     this.socket.emit('update', boardData);
-//   }
-
-//   pickOpponent(username: string) {
-//     this.socket.emit('updateOpponent', username);
-//   }
-
-//   setPlayerMark(mark: number) {
-//     this.socket.emit('setPlayerMark', mark);
-//   }
-
-//   win() {
-//     this.socket.emit('win');
-//   }
-// }
+  requestGame(opponentID: string) {
+    this.conn = this.peer.connect(opponentID);
+    this.conn.on('open', () => {
+      this.conn.send('hi!');
+    });
+  }
+}

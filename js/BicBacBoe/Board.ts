@@ -2,7 +2,7 @@ import Position from "../misc/Position";
 import Grid from "./Grid"
 import GridData from "../models/GridData"
 import BoardData from "../models/BoardData";
-import { TypedEvent } from "../misc/CustomEventEmitter";
+import { TypedEvent } from "../misc/TypedEvent";
 
 interface Index {
   row: number,
