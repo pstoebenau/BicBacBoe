@@ -19,7 +19,7 @@ export default class Client {
   onBoardUpdate = new TypedEvent<BoardData>();
 
   constructor() {
-    const simpleID = generateId(6);
+    const simpleID = generateId(4);
     this.peer = new Peer(toNetworkId(simpleID));
     this.player.username = randomUsername();
     
@@ -35,7 +35,7 @@ export default class Client {
   }
 
   resetID() {
-    const simpleId = generateId(6);
+    const simpleId = generateId(4);
     this.peer = new Peer(toNetworkId(simpleId));
     this.peer.on('open', (id) => {
       this.player.id = simpleId;
