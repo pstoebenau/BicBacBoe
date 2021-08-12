@@ -1,9 +1,5 @@
-import BoardData from "./BoardData";
-
 export default interface Player {
+    id: string;
     username: string;
-    id: number;
-    opponentID: number;
-    playerMark: number;
-    boardData: BoardData;
+    opponentID: string;
 }

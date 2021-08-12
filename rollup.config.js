@@ -3,16 +3,20 @@ import scss from 'rollup-plugin-scss';
 import serve from 'rollup-plugin-serve'
 import livereload from 'rollup-plugin-livereload'
 import { nodeResolve } from '@rollup/plugin-node-resolve';
+import replace from 'rollup-plugin-replace'
 import commonjs from '@rollup/plugin-commonjs';
 
 export default {
   input: 'js/index.ts',
   output: {
-    dir: 'dist',
+    file: 'dist/bundle.js',
     format: 'esm'
   },
   plugins: [
     nodeResolve(),
+    replace({
+      'process.env.NODE_ENV': JSON.stringify('development') 
+    }),
     commonjs(),
     typescript(),
     scss({
@@ -22,6 +26,6 @@ export default {
     serve({
       port: '8080',
     }),
-    livereload(),
+    // livereload(),
   ],
 };

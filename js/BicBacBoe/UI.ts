@@ -3,6 +3,7 @@ import { TypedEvent } from "../misc/TypedEvent";
 import Position from "../misc/Position";
 import Board from "./Board";
 import Grid from "./Grid";
+import BoardData from "../models/BoardData";
 
 const DRAG_THRESHHOLD = 20;
 
@@ -14,6 +15,9 @@ export default class UI {
 
   // Event Listeners
   onUpdate = new TypedEvent<void>();
+  onOpponentChange = new TypedEvent<string>();
+  onUsernameChange = new TypedEvent<string>();
+  onMove = new TypedEvent<BoardData>();
 
   // Audio
   bruhAudio: HTMLAudioElement;
@@ -31,6 +35,7 @@ export default class UI {
   resetBttn: HTMLButtonElement;
   saveBttn: HTMLButtonElement;
   downloadBttn: HTMLButtonElement;
+  uploadBttn: HTMLButtonElement;
   dimensionSlider: HTMLInputElement;
   zoomSlider: HTMLInputElement;
   opponentButton: HTMLButtonElement;
@@ -74,6 +79,7 @@ export default class UI {
     this.resetBttn = <HTMLButtonElement>document.getElementById("resetBttn");
     this.saveBttn = <HTMLButtonElement>document.getElementById("saveBttn");
     this.downloadBttn = <HTMLButtonElement>document.getElementById("downloadBttn");
+    this.uploadBttn = <HTMLButtonElement>document.getElementById("uploadBttn");
     this.opponentButton = <HTMLButtonElement>document.getElementById("opponentButton");
     this.usernameButton = <HTMLButtonElement>document.getElementById("usernameButton");
     
@@ -128,8 +134,8 @@ export default class UI {
 
     // Multiplayer Controls
     this.multiplayerButton.addEventListener('click', () => this.showMultiplayerPane());
-    // this.opponentButton.addEventListener('click', () => this.client.setOpponent(this.opponentText.value));
-    // this.usernameButton.addEventListener('click', () => this.client.setUsername(this.usernameText.value));
+    this.opponentButton.addEventListener('click', () => this.onOpponentChange.emit(this.opponentText.value.trim()));
+    this.usernameButton.addEventListener('click', () => this.onUsernameChange.emit(this.usernameText.value.trim()));
 
     // Board Controls
     this.dimensionSlider.addEventListener("input", () => this.changeDim());
@@ -140,6 +146,7 @@ export default class UI {
       this.onUpdate.emit();
     });
     this.downloadBttn.addEventListener('click', () => this.downloadBoard());
+    this.uploadBttn.addEventListener('click', () => this.uploadBoard());
   }
 
   unlockAudio() {
@@ -205,6 +212,13 @@ export default class UI {
   downloadBoard() {
     let boardDataJSON = JSON.stringify(this.board.getBoardData());
     navigator.clipboard.writeText(boardDataJSON);
+  }
+
+  async uploadBoard() {
+    const boardData = JSON.parse(await navigator.clipboard.readText());
+    this.board.loadBoard(boardData);
+    this.canvas.clear();
+    this.board.update()
   }
 
   changeDim() {
@@ -342,19 +356,10 @@ export default class UI {
     }
     this.mouse.isDragging = false;
 
-    // if(this.client.isMultiplayer()) {
-    //   if(this.board.turn == 0)
-    //     this.client.setPlayerMark(this.board.turn);
-
-    //   if(this.playerMark != this.board.turn%2)
-    //     return;
-    // }
-
     if(this.board.processMove(this.mouse.position)) {
       this.playAudio("bruh");
       
-      // if (this.client.opponentName != "N/A")
-      //   this.client.sendBoardData(this.board.getBoardData());
+      this.onMove.emit(this.board.getBoardData());
     }
 
     this.onUpdate.emit();

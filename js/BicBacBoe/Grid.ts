@@ -234,14 +234,11 @@ export default class Grid
         this.getGridDataRecur(grid.children[i][j], gridData.children[i][j]);
   }
 
-  updateData(grid: Grid)
+  updateData(gridData: Grid)
   {
-    this.closed = grid.closed;
-    this.selectable = grid.selectable;
-
-    for (var i = 0; i < 3; i++)
-      for (var j = 0; j < 3; j++)
-        this.moves[i][j] = (grid.moves == null) ? null : grid.moves[i][j];
+    this.closed = gridData.closed;
+    this.selectable = gridData.selectable;
+    this.moves = JSON.parse(JSON.stringify(gridData.moves));
   }
 
   addChildren()

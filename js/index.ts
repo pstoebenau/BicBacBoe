@@ -30,12 +30,25 @@ function update() {
 
 // UI Events
 ui.onUpdate.on(() => update());
+ui.onOpponentChange.on((opponentId) => client.requestGame(opponentId));
+ui.onUsernameChange.on((username) => {
+  client.setUsername(username);
+  ui.updatePlayerTable(client.player.id, client.player.username);
+});
+ui.onMove.on((boardData) => client.sendBoardData(boardData));
 
 // Board Events
 board.onWin.on((winner) => ui.win(winner))
 board.onDrawGrid.on((grid) => ui.drawGrid(grid, board.color));
 
 // Multiplayer Events
-client.onPeer.on((id) => ui.updatePlayerTable(id, 'jeff'));
+client.onPeer.on((player) => ui.updatePlayerTable(player.id, player.username));
+client.onConn.on((username) => console.log(`Playing with ${username}!`));
+client.onReject.on((username) => console.log(`${username} hates you!`));
+client.onBoardUpdate.on((boardData) => {
+  board.loadBoard(boardData);
+  ui.playAudio('bruh');
+  update();
+});
 
 update();
