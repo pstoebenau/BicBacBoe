@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width">
     <title>¯\_(ツ)_/¯</title>
-    <link rel="icon" type="image/png" href="./img/icon.png">
-    <link rel="stylesheet" href="./css/style.css">
+    <link rel="icon" type="image/png" href="img/icon.png">
+    <link rel="stylesheet" href="dist/css/bundle.css">
   </head>
   <body style="display:flex; flex-direction:column">
     <div id="BicBacBoe" style="flex:1; overflow:hidden">
@@ -17,7 +17,7 @@
         <div id="multiplayerPane">
           <table id="playerTable">
             <tr>
-              <th>Player</th>
+              <th>ID</th>
               <th>Username</th>
             </tr>
           </table>
@@ -43,14 +43,17 @@
 
       <div id="controls">
         <button type="button" name="Fullscreen" id="fullScrnBttn">
-          <img src="./img/fullscreen.png" alt="Fullscreen" width="50px">
+          <img src="img/fullscreen.png" alt="Fullscreen" width="50px">
         </button>
         <button type="button" name="Reset" id="resetBttn">
-          <img src="./img/reset.png" alt="Reset" width="50px">
+          <img src="img/reset.png" alt="Reset" width="50px">
         </button>
         <button class="tooltip" type="button" name="Download" id="downloadBttn">
           <span class="tooltiptext">Copied!</span>
-          <img src="./img/save.png" alt="save" width="50px">
+          <img src="img/save.png" alt="save" width="50px">
+        </button>
+        <button type="button" name="upload" id="uploadBttn">
+          <img src="img/upload.svg" alt="upload" width="50px">
         </button>
       </div>
 
@@ -61,6 +64,6 @@
       </div>
     </div>
 
-    <script src="../dist/bundle.js"></script>
+    <script src="dist/bundle.js"></script>
   </body>
 </html>

@@ -2,7 +2,7 @@ import Position from "../misc/Position";
 import Grid from "./Grid"
 import GridData from "../models/GridData"
 import BoardData from "../models/BoardData";
-import UI from "./UI";
+import { TypedEvent } from "../misc/TypedEvent";
 
 interface Index {
   row: number,
@@ -16,18 +16,17 @@ export default class Board {
   dimensions: number;
   turn: number;
   rootGrid: Grid;
-  canvas: HTMLCanvasElement;
-  ctx: CanvasRenderingContext2D;
-  ui: UI;
 
-  constructor(position: Position, size: number, dimensions: number, canvas: HTMLCanvasElement) {
-    this.canvas = canvas;
-    this.ctx = canvas.getContext('2d');
+  // Event Emitters
+  onWin = new TypedEvent<number>();
+  onDrawGrid = new TypedEvent<Grid>();
+
+  constructor(position: Position, size: number, dimensions: number) {
     this.position = position;
     this.size = size;
     this.color = "silver";
     this.dimensions = dimensions;
-    this.rootGrid = new Grid(position, size, this.ctx);
+    this.rootGrid = new Grid(position, size);
     this.turn = 0;
 
     this.createGrids(this.rootGrid, this.dimensions - 1);
@@ -35,7 +34,7 @@ export default class Board {
   }
 
   reset() {
-    this.rootGrid = new Grid(this.position, this.size, this.ctx);
+    this.rootGrid = new Grid(this.position, this.size);
     this.turn = 0;
 
     this.createGrids(this.rootGrid, this.dimensions - 1);
@@ -135,8 +134,8 @@ export default class Board {
 
     // Handle game win
     if (grid.parent == null && win) {
+      this.onWin.emit(win);
       grid.close();
-      this.ui.win(this.turn % 2);
       return;
     }
 
@@ -190,7 +189,7 @@ export default class Board {
     if (dimension == 0)
       return;
 
-    grid.draw(this.color);
+    this.onDrawGrid.emit(grid);
 
     if (grid.children == null)
       return;

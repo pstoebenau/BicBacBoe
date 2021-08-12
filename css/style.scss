@@ -102,12 +102,13 @@ textarea {
   bottom: 125%;
   left: 50%;
   margin-left: -35px;
+  transition: ease-in opacity 2s, visibility 2s;
 }
 
 .tooltip:active .tooltiptext {
   visibility: visible;
   opacity: 1;
-  transition: ease-out opacity .3s, visibility 1s;
+  transition: ease-out opacity .1s, visibility .1s;
 }
 
 .slider {

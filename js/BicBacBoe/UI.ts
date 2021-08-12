@@ -1,17 +1,23 @@
 import Canvas from "../misc/Canvas";
+import { TypedEvent } from "../misc/TypedEvent";
 import Position from "../misc/Position";
 import Board from "./Board";
-import Client from "./Client";
+import Grid from "./Grid";
+import BoardData from "../models/BoardData";
 
 const DRAG_THRESHHOLD = 20;
 
-export default class UI
-{
-  client: Client;
+export default class UI {
   canvas: Canvas;
+  ctx: CanvasRenderingContext2D;
   board: Board;
-  update: Function;
   playerMark = 0;
+
+  // Event Listeners
+  onUpdate = new TypedEvent<void>();
+  onOpponentChange = new TypedEvent<string>();
+  onUsernameChange = new TypedEvent<string>();
+  onMove = new TypedEvent<BoardData>();
 
   // Audio
   bruhAudio: HTMLAudioElement;
@@ -29,6 +35,7 @@ export default class UI
   resetBttn: HTMLButtonElement;
   saveBttn: HTMLButtonElement;
   downloadBttn: HTMLButtonElement;
+  uploadBttn: HTMLButtonElement;
   dimensionSlider: HTMLInputElement;
   zoomSlider: HTMLInputElement;
   opponentButton: HTMLButtonElement;
@@ -50,11 +57,10 @@ export default class UI
   isPinching: boolean;
   startBoard: Position;
 
-  constructor(board: Board, canvas: Canvas, client: Client, update: Function) {
-    this.client = client;
+  constructor(board: Board, canvas: Canvas) {
     this.board = board;
     this.canvas = canvas;
-    this.update = update;
+    this.ctx = canvas.canvas.getContext('2d');
 
     // Audio
     this.bruhAudio = new Audio('../../audio/bruh.mp3');
@@ -73,6 +79,7 @@ export default class UI
     this.resetBttn = <HTMLButtonElement>document.getElementById("resetBttn");
     this.saveBttn = <HTMLButtonElement>document.getElementById("saveBttn");
     this.downloadBttn = <HTMLButtonElement>document.getElementById("downloadBttn");
+    this.uploadBttn = <HTMLButtonElement>document.getElementById("uploadBttn");
     this.opponentButton = <HTMLButtonElement>document.getElementById("opponentButton");
     this.usernameButton = <HTMLButtonElement>document.getElementById("usernameButton");
     
@@ -103,9 +110,18 @@ export default class UI
     // Mouse and touch controls
     // Mouse
     this.canvas.getElement().addEventListener("mouseleave", (e) => this.mouse.isDown = false);
-    this.canvas.getElement().addEventListener("mousedown", (e) => this.startSelect(e.clientX, e.clientY));
-    this.canvas.getElement().addEventListener("mousemove", (e) => this.updateMousePos(e.clientX, e.clientY));
-    this.canvas.getElement().addEventListener("mouseup", () => this.stopSelect());
+    this.canvas.getElement().addEventListener("mousedown", (e) => {
+      if (e.button === 0)
+        this.startSelect(e.clientX, e.clientY);
+    });
+    this.canvas.getElement().addEventListener("mousemove", (e) => {
+      if (e.button === 0)
+        this.updateMousePos(e.clientX, e.clientY);
+    });
+    this.canvas.getElement().addEventListener("mouseup", (e) => {
+      if (e.button === 0)
+        this.stopSelect();
+    });
     document.body.addEventListener("wheel", (e) => {
       const delta = Math.sign(e.deltaY);
       this.zoom(delta);
@@ -118,8 +134,8 @@ export default class UI
 
     // Multiplayer Controls
     this.multiplayerButton.addEventListener('click', () => this.showMultiplayerPane());
-    this.opponentButton.addEventListener('click', () => this.client.setOpponent(this.opponentText.value));
-    this.usernameButton.addEventListener('click', () => this.client.setUsername(this.usernameText.value));
+    this.opponentButton.addEventListener('click', () => this.onOpponentChange.emit(this.opponentText.value.trim()));
+    this.usernameButton.addEventListener('click', () => this.onUsernameChange.emit(this.usernameText.value.trim()));
 
     // Board Controls
     this.dimensionSlider.addEventListener("input", () => this.changeDim());
@@ -127,9 +143,10 @@ export default class UI
     this.resetBttn.addEventListener('click', () => {
       this.resizeBoard(this.calcBoardSize());
       this.board.reset();
-      this.update();
+      this.onUpdate.emit();
     });
     this.downloadBttn.addEventListener('click', () => this.downloadBoard());
+    this.uploadBttn.addEventListener('click', () => this.uploadBoard());
   }
 
   unlockAudio() {
@@ -160,21 +177,17 @@ export default class UI
     soundEffect.play();
   }
 
-  updatePlayerTable() {
+  updatePlayerTable(id: string, username: string) {
     let playerTable: HTMLTableElement = <HTMLTableElement>document.getElementById('playerTable');
 
     for (let i = playerTable.rows.length - 1; i >= 1; i--)
-    playerTable.deleteRow(i);
+      playerTable.deleteRow(i);
 
-    for (let player of this.client.getPlayerList()) {
-      let row = playerTable.insertRow(playerTable.rows.length);
+    let row = playerTable.insertRow(playerTable.rows.length);
 
-      row.insertCell(0).innerHTML = `${player.id}`;
-      row.insertCell(1).innerHTML = player.username;
-
-      if (player.id === this.client.getPlayerID())
-      row.style.color = "green";
-    }
+    row.insertCell(0).innerHTML = id;
+    row.insertCell(1).innerHTML = username;
+    row.style.color = "green";
   }
 
   showMultiplayerPane() {
@@ -182,7 +195,6 @@ export default class UI
       this.multiplayerPane.style.display = "none";
     else {
       this.multiplayerPane.style.display = "block";
-      this.updatePlayerTable();
     }
   }
 
@@ -194,7 +206,7 @@ export default class UI
     // Resize board according to zoom and screen size
     this.board.resize(size);
     this.board.move(this.canvas.getCenter());
-    this.update();
+    this.onUpdate.emit();
   }
 
   downloadBoard() {
@@ -202,9 +214,16 @@ export default class UI
     navigator.clipboard.writeText(boardDataJSON);
   }
 
+  async uploadBoard() {
+    const boardData = JSON.parse(await navigator.clipboard.readText());
+    this.board.loadBoard(boardData);
+    this.canvas.clear();
+    this.board.update()
+  }
+
   changeDim() {
     this.board.changeDim(Number.parseInt(this.dimensionSlider.value));
-    this.update();
+    this.onUpdate.emit();
   }
 
   zoom(amount: number) {
@@ -225,7 +244,7 @@ export default class UI
     movPos = movPos.subtract(center);
     this.board.move(this.board.position.subtract(movPos));
 
-    this.update();
+    this.onUpdate.emit();
   }
 
   startTouch(event: TouchEvent) {
@@ -324,7 +343,7 @@ export default class UI
       this.board.move(newPos);
     }
 
-    this.update();
+    this.onUpdate.emit();
   }
 
   // Update board on mouse release
@@ -337,22 +356,13 @@ export default class UI
     }
     this.mouse.isDragging = false;
 
-    if(this.client.isMultiplayer()) {
-      if(this.board.turn == 0)
-        this.client.setPlayerMark(this.board.turn);
-
-      if(this.playerMark != this.board.turn%2)
-        return;
-    }
-
     if(this.board.processMove(this.mouse.position)) {
       this.playAudio("bruh");
       
-      if (this.client.opponentName != "N/A")
-        this.client.sendBoardData(this.board.getBoardData());
+      this.onMove.emit(this.board.getBoardData());
     }
 
-    this.update();
+    this.onUpdate.emit();
   }
 
   lose() {
@@ -361,6 +371,62 @@ export default class UI
 
   win(winner: number) {
     this.playAudio("air horn");
-    this.client.win();
+  }
+
+  drawGrid(grid: Grid, color: string)
+  {
+    // Grid
+    this.ctx.strokeStyle = color;
+    this.ctx.beginPath();
+    this.ctx.moveTo(grid.position.x-grid.size/6, grid.position.y-grid.size/2);
+    this.ctx.lineTo(grid.position.x-grid.size/6, grid.position.y+grid.size/2);
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.beginPath();
+    this.ctx.moveTo(grid.position.x+grid.size/6, grid.position.y-grid.size/2);
+    this.ctx.lineTo(grid.position.x+grid.size/6, grid.position.y+grid.size/2);
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.beginPath();
+    this.ctx.moveTo(grid.position.x-grid.size/2, grid.position.y-grid.size/6);
+    this.ctx.lineTo(grid.position.x+grid.size/2, grid.position.y-grid.size/6);
+    this.ctx.stroke();
+    this.ctx.closePath();
+    this.ctx.beginPath();
+    this.ctx.moveTo(grid.position.x-grid.size/2, grid.position.y+grid.size/6);
+    this.ctx.lineTo(grid.position.x+grid.size/2, grid.position.y+grid.size/6);
+    this.ctx.stroke();
+    this.ctx.closePath();
+
+    // Player markers
+    if (grid.moves != null)
+      for (let i = 0; i < grid.moves.length; i++)
+      {
+        for (let j = 0; j < grid.moves[i].length; j++)
+        {
+          if(grid.moves[i][j] == "X" || grid.moves[i][j] == "O")
+          {
+            this.ctx.beginPath();
+            this.ctx.font = grid.size/3 + "px Arial";
+            this.ctx.textBaseline = "middle";
+            this.ctx.textAlign = "center";
+            this.ctx.fillStyle = color;
+            this.ctx.fillText(grid.moves[i][j], grid.gridPoints[i][j].x, grid.gridPoints[i][j].y);
+            this.ctx.closePath();
+          }
+        }
+      }
+
+    // Highlight selectable grids
+    if(grid.selectable && !grid.closed)
+    {
+      this.ctx.beginPath();
+      this.ctx.globalAlpha = 0.2;
+      this.ctx.rect(grid.position.x-grid.size/2,grid.position.y-grid.size/2,grid.size,grid.size);
+      this.ctx.fillStyle = "green";
+      this.ctx.fill();
+      this.ctx.globalAlpha = 1;
+      this.ctx.closePath();
+    }
   }
 }

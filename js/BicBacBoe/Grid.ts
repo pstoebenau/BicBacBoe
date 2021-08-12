@@ -9,17 +9,15 @@ export default class Grid
   closed = false;
   selectable = false;
   size;
-  ctx;
   gridPoints: [Position[], Position[], Position[]] = [[],[],[]];
   moves: [string[], string[], string[]] = null;
   parent: Grid = null;
   children: [Grid[], Grid[], Grid[]] = null;
 
-  constructor(position: Position, size: number, ctx: CanvasRenderingContext2D)
+  constructor(position: Position, size: number)
   {
     this.position = position;
     this.size = size;
-    this.ctx = ctx;
 
     this.updateGridPoints();
   }
@@ -236,14 +234,11 @@ export default class Grid
         this.getGridDataRecur(grid.children[i][j], gridData.children[i][j]);
   }
 
-  updateData(grid: Grid)
+  updateData(gridData: Grid)
   {
-    this.closed = grid.closed;
-    this.selectable = grid.selectable;
-
-    for (var i = 0; i < 3; i++)
-      for (var j = 0; j < 3; j++)
-        this.moves[i][j] = (grid.moves == null) ? null : grid.moves[i][j];
+    this.closed = gridData.closed;
+    this.selectable = gridData.selectable;
+    this.moves = JSON.parse(JSON.stringify(gridData.moves));
   }
 
   addChildren()
@@ -258,7 +253,7 @@ export default class Grid
       for (var j = 0; j < 3; j++)
       {
         let point = this.gridPoints[i][j];
-        this.children[i][j] = new Grid(point, this.size/GRID_GAP, this.ctx);
+        this.children[i][j] = new Grid(point, this.size/GRID_GAP);
         this.children[i][j].parent = this;
       }
     }
@@ -275,62 +270,5 @@ export default class Grid
     this.gridPoints[2][0] = new Position(this.position.x-this.size/3, this.position.y+this.size/3);
     this.gridPoints[2][1] = new Position(this.position.x, this.position.y+this.size/3);
     this.gridPoints[2][2] = new Position(this.position.x+this.size/3, this.position.y+this.size/3);
-  }
-
-  draw(color: string)
-  {
-    // Grid
-    this.ctx.strokeStyle = color;
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.position.x-this.size/6, this.position.y-this.size/2);
-    this.ctx.lineTo(this.position.x-this.size/6, this.position.y+this.size/2);
-    this.ctx.stroke();
-    this.ctx.closePath();
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.position.x+this.size/6, this.position.y-this.size/2);
-    this.ctx.lineTo(this.position.x+this.size/6, this.position.y+this.size/2);
-    this.ctx.stroke();
-    this.ctx.closePath();
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.position.x-this.size/2, this.position.y-this.size/6);
-    this.ctx.lineTo(this.position.x+this.size/2, this.position.y-this.size/6);
-    this.ctx.stroke();
-    this.ctx.closePath();
-    this.ctx.beginPath();
-    this.ctx.moveTo(this.position.x-this.size/2, this.position.y+this.size/6);
-    this.ctx.lineTo(this.position.x+this.size/2, this.position.y+this.size/6);
-    this.ctx.stroke();
-    this.ctx.closePath();
-
-    // Player markers
-    if (this.moves != null)
-      for (let i = 0; i < this.moves.length; i++)
-      {
-        for (let j = 0; j < this.moves[i].length; j++)
-        {
-          if(this.moves[i][j] == "X" || this.moves[i][j] == "O")
-          {
-            this.ctx.beginPath();
-            this.ctx.font = this.size/3 + "px Arial";
-            this.ctx.textBaseline = "middle";
-            this.ctx.textAlign = "center";
-            this.ctx.fillStyle = color;
-            this.ctx.fillText(this.moves[i][j], this.gridPoints[i][j].x, this.gridPoints[i][j].y);
-            this.ctx.closePath();
-          }
-        }
-      }
-
-    // Highlight selectable grids
-    if(this.selectable && !this.closed)
-    {
-      this.ctx.beginPath();
-      this.ctx.globalAlpha = 0.2;
-      this.ctx.rect(this.position.x-this.size/2,this.position.y-this.size/2,this.size,this.size);
-      this.ctx.fillStyle = "green";
-      this.ctx.fill();
-      this.ctx.globalAlpha = 1;
-      this.ctx.closePath();
-    }
   }
 }
