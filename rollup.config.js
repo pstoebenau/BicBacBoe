@@ -23,9 +23,9 @@ export default {
       output: 'dist/css/bundle.css',
       sourceMap: true
     }),
-    serve({
-      port: '8080',
-    }),
+    // serve({
+    //   port: '8080',
+    // }),
     // livereload(),
   ],
 };
